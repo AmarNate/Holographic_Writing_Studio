@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data: blob: https:; media-src blob: data:;" />
-<title>The Push&amp;Pull, Glitches, and the Shrouded Guardian - Holographic Studio a1.8</title>
+<title>The Push&amp;Pull, Glitches, and the Shrouded Guardian - Holographic Studio a1.9</title>
 <style>
   :root {
     --bg: #020307;
@@ -1577,6 +1577,30 @@
     .floating-exit-focus { top: calc(10px + env(safe-area-inset-top)); right: 10px; }
   }
 
+  /* === a1.9 · EACH ESSAY ITS OWN SONG, ART AND LINK === */
+  .cover-hero-frame.is-empty { min-height: 150px; background:
+      radial-gradient(ellipse 60% 70% at 50% 45%, color-mix(in srgb, var(--holo) 7%, transparent), transparent 75%), #020307; }
+  .cover-hero-frame.is-empty .cover-hero-img { display: none; }
+  .cover-empty-note { display: none; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%);
+    text-align: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim-muted); }
+  .cover-hero-frame.is-empty .cover-empty-note { display: block; }
+  .cover-reel-anchor.is-none { display: none; }
+  .lyric-empty { font-family: var(--font-mono); font-size: 11px; color: var(--dim); padding: 6px 8px; line-height: 1.6; }
+  .lyric-edit { display: none; flex-direction: column; gap: 8px; }
+  .holo-drawer.is-editing .lyric-edit { display: flex; }
+  .holo-drawer.is-editing #lyricsContainer { display: none; }
+  .lyric-edit .holo-textarea { min-height: 150px; }
+  .lyric-edit-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .lyric-edit-hint { font-family: var(--font-mono); font-size: 10px; color: var(--dim); line-height: 1.5; }
+  .tap-panel { display: none; flex-direction: column; gap: 8px; }
+  .holo-drawer.is-tapping .tap-panel { display: flex; }
+  .holo-drawer.is-tapping #lyricsContainer, .holo-drawer.is-tapping .lyric-edit { display: none; }
+  .tap-now { font-family: var(--font-writing); font-size: 15px; color: var(--ink); padding: 8px 10px;
+    border-left: 2px solid var(--rgb-g); background: color-mix(in srgb, var(--rgb-g) 8%, transparent); }
+  .tap-next { font-family: var(--font-mono); font-size: 10.5px; color: var(--dim); }
+  .tap-mark { align-self: flex-start; padding: 9px 22px; font-size: 13px; }
+  .drawer-head-tools { display: flex; gap: 6px; }
+
   /* === a1.8 · EDITABLE TITLES === */
   [contenteditable="plaintext-only"] { outline: none; cursor: text; border-radius: 3px; transition: box-shadow 0.15s ease; }
   [contenteditable="plaintext-only"]:hover { box-shadow: 0 0 0 1px color-mix(in srgb, var(--holo) 30%, transparent); }
@@ -1712,7 +1736,7 @@
         <button id="btnQuote" class="relay-switch" title="Toggle Blockquote (latched ON/OFF)"><span class="relay-led"></span>&ldquo;Q&rdquo;</button>
         <button id="btnBullets" class="relay-switch" title="Bulleted list"><span class="relay-led"></span>&bull; List</button>
         <button id="btnNumbers" class="relay-switch" title="Numbered list"><span class="relay-led"></span>1. List</button>
-        <button id="btnCue" class="relay-switch" title="Insert 22hrs Timestamp Cue (Ctrl+Shift+K)">+Cue</button>
+        <button id="btnCue" class="relay-switch" title="Insert a timestamp cue from this essay's song (Ctrl+Shift+K)">+Cue</button>
         <button id="btnAddMedia" class="relay-switch" title="Insert Image / Visual Media (+Pic)">+Pic</button>
       </div>
 
@@ -1730,7 +1754,7 @@
       </div>
 
       <div class="relay-row">
-        <button id="btnToggleArt" class="relay-switch is-latched" title="Toggle 22hrs Visualizer Strip"><span class="relay-led"></span>22hrs Art</button>
+        <button id="btnToggleArt" class="relay-switch is-latched" title="Show or hide this essay's art strip"><span class="relay-led"></span>Art</button>
         <button id="btnOpenSkin" class="relay-switch" title="Skins & Hologram Presets">Skins</button>
       </div>
     </div>
@@ -1759,16 +1783,17 @@
     <div class="stage-scroll" id="editorScroll">
       <div class="stage-column">
         <div class="holo-art-strip" id="visualAnchorCard">
-          <img id="visualAnchorImg" class="holo-art-thumb" alt="KAIA - 22hrs Visualizer" />
+          <img id="visualAnchorImg" class="holo-art-thumb" alt="" />
           <div>
-            <div class="holo-art-title">KAIA - 22hrs (Fan-made Visualizer)</div>
+            <div class="holo-art-title" id="artStripTitle">KAIA - 22hrs (Fan-made Visualizer)</div>
             <div class="holo-art-sub" id="artStripSub">pivotal track and the inspiration for the essay</div>
           </div>
         </div>
 
         <div id="coverChamberView" class="cover-chamber">
           <div class="cover-hero-frame">
-            <img id="coverHeroImg" class="cover-hero-img" alt="KAIA - 22hrs Fan-made Visualizer" />
+            <img id="coverHeroImg" class="cover-hero-img" alt="" />
+            <div class="cover-empty-note">No cover art yet</div>
             <button id="btnSwapCoverArt" class="cover-art-swap-btn" title="Upload custom cover image">Change Cover Art</button>
             <a id="coverIgBadge" class="cover-ig-badge" href="https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==" target="_blank" rel="noopener noreferrer">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -1792,9 +1817,9 @@
 
           <div class="cover-link-bar">
             <a id="coverReelLink" class="cover-reel-anchor" href="https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==" target="_blank" rel="noopener noreferrer">
-              <span>&#9654; KAIA - 22hrs (Fan-made Visualizer) &middot; Watch Reel (@IZ.NENAD.AN) &#8599;</span>
+              <span id="coverReelLabel">&#9654; KAIA - 22hrs (Fan-made Visualizer) &middot; Watch Reel (@IZ.NENAD.AN) &#8599;</span>
             </a>
-            <button id="btnEditReelUrl" class="holo-mini-btn" title="Edit visualizer Reel URL">Edit Link</button>
+            <button id="btnEditReelUrl" class="holo-mini-btn" title="Edit this essay's link and the words it shows">Edit Link</button>
           </div>
 
           <div class="cover-toc-box">
@@ -1829,9 +1854,9 @@
     </div>
   </main>
 
-  <section class="audio-dome-wrap" aria-label="KAIA - 22hrs Audio Dome">
+  <section class="audio-dome-wrap" aria-label="Song player">
     <div class="dome-top-row">
-      <label class="holo-mini-btn" style="cursor:pointer;" title="Load 22hrs MP3">
+      <label class="holo-mini-btn" style="cursor:pointer;" title="Load this essay's song (MP3)">
         Load MP3
         <input id="audioFileInput" type="file" accept="audio/*" style="display:none;" />
       </label>
@@ -1840,7 +1865,7 @@
         <div class="dome-track-name" id="domeTrackLabel">KAIA - 22hrs</div>
         <div class="dome-timecode" id="domeTimecode">0:00 / 2:45</div>
       </div>
-      <button id="btnToggleLyrics" class="holo-mini-btn" title="Expand full 22hrs lyric sheet">Lyrics &#9652;</button>
+      <button id="btnToggleLyrics" class="holo-mini-btn" title="Open this song's lyric sheet">Lyrics &#9652;</button>
     </div>
 
     <input id="domeScrubber" class="dome-scrubber" type="range" min="0" max="165" value="0" step="0.1" />
@@ -1875,10 +1900,32 @@
 
   <div id="lyricsDrawer" class="holo-drawer">
     <div class="holo-drawer-head">
-      <span>KAIA - 22hrs &middot; Click any line to stamp cue</span>
-      <button id="btnCloseLyrics" class="holo-mini-btn">Close</button>
+      <span id="lyricsHeadLabel">KAIA - 22hrs &middot; Click any line to stamp cue</span>
+      <span class="drawer-head-tools">
+        <button id="btnEditLyrics" class="holo-mini-btn" title="Paste or change this song's lyrics">Edit</button>
+        <button id="btnCloseLyrics" class="holo-mini-btn">Close</button>
+      </span>
     </div>
     <div id="lyricsContainer" class="holo-drawer-list"></div>
+    <div class="lyric-edit">
+      <div class="lyric-edit-hint">One line per lyric. A line can start with its time (0:15 like this) or have none; lines without a time get timed with Tap to time.</div>
+      <textarea id="lyricsEditText" class="holo-textarea" spellcheck="false" placeholder="Paste the lyrics here, one line per lyric"></textarea>
+      <div class="lyric-edit-row">
+        <button id="btnLyricsSave" class="relay-switch is-latched">Save</button>
+        <button id="btnLyricsTap" class="relay-switch" title="Play the song and tap Mark as each line starts">Tap to time</button>
+        <button id="btnLyricsCancel" class="relay-switch">Cancel</button>
+      </div>
+    </div>
+    <div class="tap-panel">
+      <div class="lyric-edit-hint" id="tapStatus">Line 1 of 1 &middot; tap Mark the moment it starts</div>
+      <div class="tap-now" id="tapNow"></div>
+      <div class="tap-next" id="tapNext"></div>
+      <div class="lyric-edit-row">
+        <button id="btnTapMark" class="relay-switch is-latched tap-mark">Mark</button>
+        <button id="btnTapBack" class="relay-switch" title="Go back one line and mark it again">Back</button>
+        <button id="btnTapDone" class="relay-switch">Done</button>
+      </div>
+    </div>
   </div>
 
   <div id="unsaidModal" class="modal-backdrop">
@@ -2030,7 +2077,7 @@ Closing</textarea>
   <div id="whisperToast" class="whisper-toast"></div>
 
   <script>
-    const DB = {"meta": {"project": "Custom Writing Studio", "version": "a1.8", "essayTitle": "The Push&Pull, Glitches, and the Shrouded Guardian", "author": "Nate", "handle": "@IZ.NENAD.AN", "reelUrl": "https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==", "essaySubtitle": "An introspective personal essay, combined with an audio review as a showcase of core pillars upon which the artist works and how this essay is built.", "visualizerCaption": "KAIA - 22hrs (Fan-made Visualizer); pivotal track and the inspiration for the essay", "visualizerArt": "data:image/jpeg;base64,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"}, "chapters": [{"id": "cover", "num": "0", "title": "Cover & Title", "subs": [{"id": "cover-main", "title": "Cover & Title", "isRoot": true, "isCover": true}]}, {"id": "intro", "num": "1", "title": "Introduction", "subs": [{"id": "intro-main", "title": "Introduction", "isRoot": true}]}, {"id": "felt", "num": "2", "title": "The Felt", "subs": [{"id": "felt-exposure", "title": "Exposure"}, {"id": "felt-intermission", "title": "Intermission"}, {"id": "felt-pulse", "title": "Pulse&BloodFlow"}]}, {"id": "pushpull", "num": "3", "title": "Push&Pull", "subs": [{"id": "pushpull-gamble", "title": "A Gamble"}, {"id": "pushpull-tether", "title": "Last Tether"}]}, {"id": "glitches", "num": "4", "title": "Glitches", "subs": [{"id": "glitches-trope", "title": "Cheap Trope vs. Distortion Masking"}, {"id": "glitches-visage", "title": "MultiFaced Visage"}, {"id": "glitches-trail", "title": "Unwoven Trail"}]}, {"id": "guardian", "num": "5", "title": "Shrouded Guardian", "subs": [{"id": "guardian-hei", "title": "He&I"}, {"id": "guardian-fidgets", "title": "The Clutch of Fidgets"}, {"id": "guardian-promise", "title": "Unfulfilled Promise"}, {"id": "guardian-hword", "title": "The H- Word"}]}, {"id": "sharplight", "num": "6", "title": "Sharp Light&Defined Edges", "subs": [{"id": "sharplight-main", "title": "Sharp Light&Defined Edges", "isRoot": true}]}, {"id": "unsaid", "num": "7", "title": "All Things Left Unsaid", "subs": [{"id": "unsaid-main", "title": "All Things Left Unsaid", "isRoot": true}]}, {"id": "closing", "num": "8", "title": "Closing Wordsmith", "subs": [{"id": "closing-main", "title": "Closing Wordsmith", "isRoot": true}]}], "lyrics": [{"t": "0:15", "line": "i been waitin' on you"}, {"t": "0:19", "line": "stuck in rain showers, i been prayin' for june"}, {"t": "0:23", "line": "22 hours and i'm fading from view"}, {"t": "0:27", "line": "but i just wanna know about you"}, {"t": "0:31", "line": "just wanna know about you"}, {"t": "0:34", "line": "where ya been, boy?"}, {"t": "0:36", "line": "i was dancing on the ice, gettin' thin, boy"}, {"t": "0:40", "line": "and yeah, you got that thing, boy"}, {"t": "0:43", "line": "put your hands on me and it's the medicine, boy"}, {"t": "0:46", "line": "'cause 22 years got me feelin' like a lifetime"}, {"t": "0:50", "line": "22 years, maybe you could be the lifeline"}, {"t": "0:54", "line": "whatcha think, boy?"}, {"t": "0:56", "line": "can you handle all the baggage, or ya sink, boy?"}, {"t": "1:00", "line": "i been waitin' on you"}, {"t": "1:04", "line": "stuck in rain showers, i been prayin' for june"}, {"t": "1:08", "line": "22 hours and i'm fading from view"}, {"t": "1:12", "line": "but i just wanna know about you"}, {"t": "1:16", "line": "just wanna know about you"}, {"t": "1:20", "line": "so don't let me fade away now"}, {"t": "1:24", "line": "just keep your eyes on me"}, {"t": "1:28", "line": "don't be another letdown"}, {"t": "1:32", "line": "oh baby, don't you see"}, {"t": "1:36", "line": "22 years got me feelin' like a lifetime"}, {"t": "1:40", "line": "22 years, maybe you could be the lifeline"}, {"t": "1:44", "line": "don't let me fade away now"}, {"t": "1:48", "line": "you don't know what i've seen"}, {"t": "1:54", "line": "what i've seen"}, {"t": "2:00", "line": "will you come for me?"}, {"t": "2:08", "line": "and you won't come for me"}, {"t": "2:16", "line": "and you won't come for me"}, {"t": "2:23", "line": "i been waitin' on you"}, {"t": "2:27", "line": "stuck in rain showers, i been prayin' for june"}, {"t": "2:31", "line": "22 hours and i'm fading from view"}, {"t": "2:35", "line": "but i just wanna know about you"}, {"t": "2:39", "line": "just wanna know about you"}]};
+    const DB = {"meta": {"project": "Custom Writing Studio", "version": "a1.9", "essayTitle": "The Push&Pull, Glitches, and the Shrouded Guardian", "author": "Nate", "handle": "@IZ.NENAD.AN", "reelUrl": "https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==", "essaySubtitle": "An introspective personal essay, combined with an audio review as a showcase of core pillars upon which the artist works and how this essay is built.", "visualizerCaption": "KAIA - 22hrs (Fan-made Visualizer); pivotal track and the inspiration for the essay", "visualizerArt": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wAARCABqAbMDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD8qgM0u00L1pauCuJsTaaNppaKdkK4m00bGpakVC/C8U1C4XGbGPzCnYPUtWrpfhu/1R1W2TOe9dVB8HPFFxF5iRxkHkdf8Kr2a6GFTGUqOkpWPP2Uno2aZt966DWfCOpaJKYrpMFeuKxJImjJ3UOlbc0p1oVVeLuRbTRtNLRS5UaibTRtNLRRyoNRCpo2mlpQM0ckRXG7TRtNOJHpRkelLliFxu00bTS0uB60csQ1G7fejb707j3o+mafKg1G7TRtNP2GlEbHpT9mh2ZHsNKUYDdUohf2pfIcnnGKFSu9AtIhEZPcUGNhV2OzLfxCntYkLuZhmtPq4+WRnFcUoU+lTtbkH7wpvknOBWcqVgUWyHY1G01K0Tj7xpNh9aPZitIj2mja1PKEUmDScV1C0hu00bTTsGjBo5UFpDdpo2mloo5UGohU0bTTuPejj3pcsRXG7TRtNO496OPejliFxu00bTTuPejj3o5Yhcbtalp6q3WtCw0O71FgIgMt0FUqakTOpGCu2ZgGOKCrYzXoVt8HfEtzbfaERSuM96xNX8D6zpDFbmLGBT9kjCGNozfKpHL7TQA3arEttLEdrjBFQ4IqXCx0XG7TRtNLRU2QXE2mkIxTyMU1qTSGmJRRRUDFXrS0i9aWtoLS4mFKBmkpw6VSSJBRVqzTMoG08moAPSrFuwBDbuBirukVbTU+m/2WvgrrHxj8Q3Ph/wAONbG8tLY3cgnlCL5YxnsSTkjAr6f+E0fwj0A31v8AEWze6tIoJYUSA/N544U9Rx179cV+f/hPxzqXhicXelahcWchTY7wyFGIPBGUwcEcV1Unxhu2h2eeeh4zXkUZ16eKcpaxPlMxwNTEVNDY+ObaZ/ak72KoELufl+teAXfMpZcYNdV4p8Xzas7NK24sa5F2ZzuOK9tzU1c9jLMPOhTSkRt0ptOIb71JtrB2ueokwwPWgDHal2mgqTS0DlbEwfUUbTTgDn0xSnkZot2FZjOPutSkccUYDc96UegpqDGIVpMGnjcB0peT2rX2E7bBdNiBFPWlCUAc+9OycUKhU7Fpwe4mDTgMcijdxj0pwGBmjk5dC1yj8sQC1SRpupiKX68irSptBArqoRh9tgpRT1YseFGFpXbI2scVJBErdMD606eDacqu76V2L2SW6K54PqUHXDU0FSatOnHSqrROPmUHjvXJXp02rpi9otk7jXj3d6hZWUkVN85AxTWUsNrda4UuTS43Dn2ISM00jPFS7D2pDGfSk1HuTyTtsRbRRj3NS+U5OcGgxt70rxXUPZy7Eez1agqP71OMTY6Gk2N7/lT0IcWuhHRUnln0FNK9aFC60IaaG0u006jJPap5GLVibRQBilUnvxQd2eaVhNMkj6fjXpPwzayOoRLc4PzjGa81Q4HX3rX0bWpdNnWSNtpHetqej1OPGUnVpuKP0n0TUvg83wghs4LAr4sEp8yZsGIwYPA5+/07V478ZfgVrWnfCmL4wSLajQr27NpCRMDL5mW6r6fIenpXhGm/Fm6tLVY2mJ49apeJPinquuWS6bcX88lpGSywNK5jUn+ILnGfevNx1StVnFUdEtz5vB5dVpVeZnnmuQhLhtpznpWOfQ+laWpTtPKzlR7Vn9eK76a9xX3Pr4aqxGRikqRlpmOM0mh7CUjdKdjjNI3T8alqyGhtFFFYjHJ1pR0NInWnLXTT+EligKRTtoptFPYQ4If4jSgkU3J9BRk+gpctwJ1lYfdNO8+T1qvuxShiRU+zRPJcV33HJpmec0EgHOaAcVray0NIJAOtLgUgOTTqFBM0WgA4p+9aZRUNJs0TaFOCflpmefSl4NATPStqcHJ2SM5sAuelTx2zOfU1ZsbPzWy+EQDJY9AKnkvPJBitBsXu3dvx7fSvp8LlsKcFVr9ehzc9yOPS5iNxVVz/AHiB/On/ANlOWCLJCxPZXBqu7zN87MTnuau6bHtkE8qExoenUE+le3hqFCpJQUCEm3YG0SaM4kMae7MBTTo8hHySQNjssgJq3rVwt3PugiSNQo+VM4FZSJK77Eyx9BXRicPh6ErKGgN62QyazmhbDoVPuKZbwPK+xVzzxWjaTXbyLaOjSJnBRwTge3pXougeC9Ne0OowsEgRN87zdYvYetfLZrTocjdL4uxz1sSsOtTj9M8L3M6ruAy/QL1roovAMowtyohyM/vZQv8AOrd3riRS/YtHiNrADjzMfvZPcntnsBU7aNdyKskSXeXGcypgk1+a4yvXhL3tDhdeb1btcih+HqyYSCWGZz0EcyMfyFSy/Do2wC3i+Ux7SyCOu58IeG7nw/Aur32mx3RdNxWdSyjPTHofer/iHSX8XWeLXSILaaPOXtwRl+3PcflXkyzKpzcnNp3ON4yaly307nlU/gMH5YHilPpHOCaxNS8JTwBkWJ1YfwuK6n/hHdRhuGju45/k4xGNxBHaov7XurKb7HcB7mEHDRzj5l+h6iuyniqq1UrndQqVZSSi7nmt3YTWzhJYip6VYs9GnnxtTOe3evX28IaZq+ltq8EoktAQJTjLwHsCP69DXDajPJp1y9lEhjTPysOrDsa6qeYyq+6tz7/JaFGrBe3evbqZkPheUjMiIo/2mxVqLwisufKdGPorZq7DYC8UFZZN2P4+9buh6clhNtuLdJGPUuSQPpWVTEzXU+0w2VUKjUXHTucufCHlj5yin3aopPCpZDsVGPbBzXa65ZQ6gRHDAiFOMx5ANc5PpLWalnuCGHOF60oYiT6l4nKqNFu0bo5S70a4t85jIx6isuaNhwwrr/7UlB2XaedEP4W6ioNQ0+C8h+02gzGT6cj2NehSxMl8Wx85i8spzTdN69jlPlI21GQM1Znt2ic9sGq7I2S2MV69CqrHy1eg4OzQw9PmpMg0Yy2Kdt47Vs6uljlS1GN1pQCOtB5pDnvSgroHoB45pVcU089aKvkiZONyytwQv3s0NcE/MrVWANKODzWM6a3QuRLoPMrHO5jUdFFVaw9goopMrQHqHBOKR+lL3pH6VFSNkXHYZRRx70VziFXrTgcU1etO7/jXRTTaExwGTTsCkDDpTqp3RI3b6UbfenZx92lVs0rsV2M2+9KFYfL0p/T0xQStPdC5mR9ONtIOtK1BGKeprBdRKUHFJQOtF7Fj6KTAzS9a2p03MU5iAVYtot7AetQjk1t6fp0xt3vWjJjQcHHU9BX0GUYN1au17GE5diWCOzuZBYmcQqP4scMfc1bv9A0/TER7q7kBkGVVQCSPX6VJDpEOgiOfXEGZQHEP8WKp6zqJ1u+LxxkKcRwpn7qDgCvs1Qpqm/apc3RdiL2XmQRWWnyvgXpwegMZz/hWha3NrazCyDeZETgtjBBPU1k28DxStvUr5YyQetPt7eS5crEjNITlQKeGvTtyxsxQnbZGzd3dppuIEInkkzvk2AAD0Aqu+j6UyrKupPGHG4AR7jj061Uv9Pubbd9sJLDAUg5z7Vo6daT3NrDIsPzI23g80sfWtF+0j6GFepyanXeCfBuiazPHBFdyvcnABZQoP0rqdWttM06eHQYrp/LgcoUUD98/QlifyGaPD2mTaFpK61PbbZfKLWwx96Q8DNehaH4V0TVn0yG9KW+o3xTzLiYcL6heOSfX8BX5/icZTqKTdlNbHzWIxHvtt3R5zqnhTw9p0RmY3InfmOLIJ6c59qTwxpdo98j6jHJKoOVj6Bn7Z74r1i1+HF54n8Q6nYJbx28WlyPmWbgRxD3PXpWLLYabFqphsIt9tbf8tHGBIc9eK/P89bTTe73Ip4pTTjfUs+HvE0Nxdvoc0MjWpykSxrjyT2cDv9P1q7r+uR+GbVNKiLvKxxPOUwJEPYL2rG0zS7uTUmu7dNhD78pkDYO1XfEuj3t9O13IMpI4CN2yOtfIzUedXehjpzJ9Di/Gdnpt4IbzTYpEmcAyjH7th6juD+lReGfBvhzWlYXr3KXmQFjyPmB64PrXYyWEcF1aSy2iPblwjrsyCO4xXY618PJfC2mweKbeKO4gvRi1dB8yk9j6EdM1dTGexio31ex72UtOSfY8ourXR/Dt5Jbw3UsaxjZJbzAbZEPUkjuO1Wbr4feGDavq1xfJcIIxLbxDqwI4J+ld/wCIvBGlavqKWWoqn+kWSTQxwcywT/xBvVM9R+VUvA3w81vX0l0g2gR9Md96HjdEe4z6VpTxeia3PvsoqXrRq2u9meTx+GYZi95byhlT/VoF24/xqrbW9/bXEzzWhK7CEyOh9RXoGowPb+JJNLiQLFaE5A6DHr+VUH0m61S/e0h6k/gBXZDENrU/Z8Jho4ilGUd/I46eC8kWGWK3Jxw2B1NTt4chMJvryZIGzkptJJrqrnRbvSbhIJ1yAeuOKraq/lXy/KHilT7uOMVcKrbudc8vUFeevkefeJdH8OzxC7tbwQSjHmIw4PuKwLOK1sCWF4JFbgoo4I9a7Pxf4LvYLpHiTMc670A/lXN3mhWqlIYn8u6A/eRP/MV6UKl1ZnyeNwcoVm+RL9Tntb0z7O7OoyCNwPsa5yRRyK9Fv9Kup9PwYD5kHyOCOa4K6tzHM6BCMcGvUwVTm0PkM8wcqUlNLRmewxmk3YqTyz3FMZT0r1oK6PkpwaI80UrCjqeK1g+hi0JRRRV6MnYXaaXY1KpzTqxmxLUjIYUA+uac/IoVcjhmzSc3Yd3cTvxupNvvTirD73SkJxUuchNjSCOcUxzkU8sf71MfFErtajWw2iiisAFXrT9opsYYtxUmMdhXRTegWuM6GlUmnZHpR8tat3QuUNwoBUdqBtoOM8VFrByCsxJpAzZ+alHPakxk1qmhuHYXIpDjtS9BTTyaie40rDie1NopT/OnBXY5MByadRRXfTVkZSJIhuIrvkkin8KW6B1iS2kBY45b2+ua4GLhhXeaPb2Vzobb2do4HE8iE/eIU/L+NfccMa8z62IMjVL+bxHrZubglY3KICeiIBjFUt8a6gssIwgcEAHoBV57+91y9isrSAQoSI0hgGBj39T71Jd6RDpnnW9yrSXSnGAflj+vvXrQw7qXlvruZpN6oTxGqrfSuhGJCHG3oQRWp4Y0/Tr1EMs7200R+8p+99ay7bSJL+NW80hunzdMVv6X4ZvLQ+cso6YyK9XD4dupzcuhadrtmjr+i6TBsu/tCTyDAEYPyn3qHwWyXV/Fp7WgZTLnfk5HoPpU8uiXV5DtQZ5+f1rb8JeGptP1a3lkO7D/AHAcE/jXncQYdunzpaI8fG1PdZ6pr+gWF6kelvqsELWhiEvmDahGwHAb/Gma74W8VXeoWWpaWLmXy40RVT5lATGNpHQVt6L4d07xJfPFqolEcmJGUnJyBwPfpWhb6p4s8LeIrTT9Dt57eGQBQkGTFgcALnrx1Jr8SxinCcp/0j5SVW2iZ6lqWm3Fnpun6nEscSahaxw6mVyx88qAwf0zzXlmr6VY6T4mm0yKMPGQS46jZ2r6B8NeNbGW2k03xDpUF2t2PLu5IQAqjsRjq445rzzxFp/hVtckl0GGTKAkifkde3fH1r5POMZP2KU9+55uHryjUaaOS8O2dhe6jbx6nvs7ItsDRpyPc1reNNK0ay1A2ugSPeJGN7bh8pGPuD+ddj4Ss7CcPLdW1oyDl96d/bmtbXLHSBbCW2s7CL+/gZJPY8mvgamLtUNliZc6PFdNi07UdX0zTnszCks3znGOc+navojwx4WM3iKTSb2JLjw3aHeBKfkD4HOfXNeb2Oi6Lc63aT6laEo8vWEBWJr3m78caZo2gDQfD+iiKGVQzXtwnmbZcdSD1ArixuLk3FRPsMnrPkaS3Pnif4R+MX+KOoeITpdz9it7syxeUDtMaHgBunpXSeJtNXR4rrxTpV1Hby6gAJoIVErxyHoDjhOla/i/4keP9OvYohqshtXjzmF8xSZ4JAxjB9K0NKiin0iPUtasI4ob/AuY404znhl9q9DD15Sim3qfpWUuLioJ2bPmDUmmi8QXi/YBPLOjiXOfkff1/wDrVd0mzfTwupX1sFCPyiJ1Fd/4xi0O216aXRtOMPmEvtd9xOT1zWGkl5I5V7JGQnuDXu0aloq5+5cMYZRw8W9Wcrr6Ra1K91ZwFVHRWTBArzvxGLm2lAVDmNTt4717TqDXMaqsVhGAeuErkdeg0u6cDULYhw3ITv7V2U5p6HvY7Ce1i7OzOK8NzajqsIl1XJECEqWHT2rM8T+Bb6/1iHWLe0kMc+yUlRxXb61qKW2kNbaPaiMQDJBGc+9cm3jbW7q3Fr9swsY2omK7FUadzw8Th6MIqFZ36oqyW8r6nJMIwoiILKOVIHrXk/jGWC11u9SGNNrOenb6V6nY6pcvbXUMip5jgEsorybxVbOdQkaUckk/rXpYGavZnxnEtP8A2dOmjAYq4yuBntVeYY4xVuSJk4wcVFLHuTdivfpTbtY/NatLR33KRGKTApx700nFddmjynYTo1KR3ptH0OKuMLq5i2KeDx6UE+9JRjvR7NgnoFKDg9aMtQCAPmUGk6bE2Oph60vXkY/GkIOetJUmSFNccfjThn+9TXBCjPrSqQajqNDKKKK5Cia2VmkIHoalePnO2mWTbZj/ALpq46bjvU9RWtN2KTS3KYSnGKptjdlphVxyVYVcbs0jKm0RbBSiMdqdufvml3/5xVarcqKi9RPKNIY2FLvPXNCtzyTihc0SnGLGUhx3qZkU8immP9a0VmZum0RDn60dMU7bg4pAO7VdNcrMpJjuxpB1pf4aQda9GNrIye5Ys4vNnVGYAHqT2resryWGzuoIpMAgMAO+D1rnUcqc5rW0mN7qVYEPzPlQPqK+myKql7kd2T10NrT9RMdxFPpNm8VyeJSoz3/h+orR1vRtZk1mR4bOdhPhslOuRVHRdauPDWottJKpxtIBGfXmulm+IerXbq1vcxEHt5fNfoODp0nT5aj1M03siOTw1rkVpFMlmf3eS+3tUVh4lktiYmlK7OoI6VeuPGutTW4V2eIv8ocdCav6D4DlvA+o36oTINw4wGzXpqHNpRM5zs9SC28WySjb55x24Fd58ONN1PxDrMf2WB5AAS7kcKMcnP0rOHgC2ktBNZWyCRDhgRzj1rS8Ja5q+i6kdLhmMYDbCE4JGMYNeBncJwg1V2aPCx8207Hrun2es6XfQXF1Zuw3j5E/uA88+td7c2ZtrmW2gVPsceRLM4wR3G31GDz71ymg+LtatpzaXFwhiiYHDoM59M10Op+KBqZW2ixHGDgKePw6V+JZvToRUuR2bPjqspOWxbsdYtLMTW1jbfuiAilzwB7AVUtvDeoXOqi4itnIkT+EZ71MNLl8gXAXavXJHX3FdH4TF7eazFZR3jwrtLlvpX5Xn9Zwjyy3MedQTaNix8By/YlH2EgkZJzirf8AwryV4d7W4OfU55ruNM0ix+wl57zzJQMowB+apJdOtpLYv9pKOOzAjA9a/O54lqe5yLFNSTPI7jwrqenarZubd1CTDnHAAr0+fVLC+8jT5bJHjCIPlAwD3z61yuupfRapYhb954pSQoI4xmt7RtPmedmXg9FbGTV1J3tJn6LwzWdWPK9jL1L4bXl3LPd6rJF/YwkJSJflkiP+yB1BqXU76zsNnh/TIQYbNEiRtgxIQmT+ArqlW2hfybm93ufvrgkkentVLVNF0Te00JCA8Beu3PWvQwktmz9NyzBqM049T568XKtxrMMwUASRk5Q5wQSCn59PrWeI7uPmJyR9K6vxP4YWz124WBt6xMdq54BOP8BSabpbzKyeVyOvFfSUdkj984ZpujhlznFXi3zDcegrzzxCrDUNxYEk17TrNmtoojMQO7OK4HUPDEN7extPhVfL8deK7KU+Sep9NiKXtoXgcO5jZGRh98Y5rl77wVefao7/AEqSJlD5Zc16veeHdKjXHmnI7YrCvbCzT92twF98V1xq32PIxOAVRe+tjjpEt9JvWkkt0UD7wxxwK8i8dzQ3OqtcwABHJIx25r1zxUAF8veHcjZkDjFeI+KjJDdSQf3HNepgm5Ssj4XidqlR5baGLJyh9qruGMDHtmmNcvjFSecpgKnqa+gpJxsfl1SpCpczyvDNULEn2qeUbaiCHrXr04Smj5+ro7DBzTio7UuDR0rop0X1MGxAMUtFG7/Zq+RLcXMFJgUvWij3QYmMdqXHtRtf0p6xnripfKtSeawwIW6CieJkiUt3NWootg3NUV82UA9DXJVqJqyFGd5FKiiiuA2JrY/vevY1cikwQrc81Rh+/wDhVqLt9a2gtCJm5Zab9sX92tWpfDFz5Zfyj8vPQ1r+CgGnXcAenWvVb63t/wCxJ38iPcIeDtGRxXz+LzGrQq8sep49bFTpTSXU+cry0lhkwR3qrhgeVxXR+JQBdOAMfNj8M1zasxPJPRj+ODXu4Wo61FTluevhqrnBNhS/MBjaae4AkbA6SMv4ZHFPkVfMYbRjDcY9EGK7EkbczGo3HXpTmHmdKjTpUsX3qmySudUPeSRG6EDcAaj+YjoavTgCFiBjgH9Kqfwmooy5hVqai7eVxlApf4aSvUirq5wvRi+ldR4LRX1IbtjOAdiseCT3rlx2rR0slZUZSQQw5FfQ5A/9qizOZ3GseG1eQzIjrK672z93PfkVzNtd/Y7g9QAccc13EssgcgSMB5fTNc7o0EEt/diWFH2lsblBxX6bVpKylHQw5nF6F251OHVrKO2TAZHDb1XBxXrnhWd7zR7SJiQqIF3HrwK8b0yONZbnaijBOMDpXpXhaWUafGokbHpmvSy5tNuTuc2IbbueirD9hjZo7oS5GTjtXG6bdw22tXF5K4GHz04rRjll+zSfvG6etYMQBeTIByOc15HEzvBI8Wu3K9z3Pwn4p8L+JbWSz1WCeO8jjxDcxJkM+OAw/qK67w9pNs8U15cRvJvwAcZAcVwXw6tbZfDlvKtvEHMpBYIMkbh3r067/wBFubSC2/cxEklI/lXJ74Ffg+MoxnipKR8ni5ckmkbZu9Nj09La7aUEOPLbZhQPQ1b0mVNG1+CeWUPDIpCMvcEdKybiOMpdqUXAtd4GP4vX6+9V9FZmu7FWYkA8AngV+TcUyVSu0lY5IWknc+ivh81hd2DIqHfGSTu561qeL4bGLTJHmXGflG3g1zPw3JDy4JHy9q1/iAx+zxjJxX5xNLnseZZc9jy3U5ra+1jTrW0nK/Zo3Us3RcnOa7rRNS0Ce0ksY53a9i+V5EHy/jXlGuExa5H5Z2Zznbxmuq8JACztGHBkkYOR/EPf1retpFWP0Xhio6copdTsJNNWUIUlk2b8ySAcn8a0L6TQINNMqh5b/BC5HyqO2fWqUXHiC2gHETSDKfwn8KZ4kjji1G9ijRURZFCqowBz2Felg5aJH7bk8VKrGPRnkfiHzYtYeWacyySs7ucYyT7flU2nxhbcuOpNN8Vf8hTP1qazA+yjgV9Lhpe9ex+6YCmo0EkZPiCyhuIUlfIaM8EV51qau2tLBECcRf1r1DUubZwfSvPLoAeIeB/DXW7c17Hv4Ve5ZmDqFqkDnzW2764/VdMka6aYzARnlBXa+IOZua5LWWbEXJroo7meNi0tzivFMlhp9g80uDMB8oz3rwbXpfPuJJScl3LGvWfiKT5bjJxkV47qH3z9K97BLW5+R8W1ZSnydEYkwwaZuPrUs/3qjHQ19NRV7H5XX0bsFvbSXcojRSxJwK6rT/h1rV5F5iwgDGQSap+CAG1mLcAfrX0XoiJ9gHyL37V+x8JcO4XHYb2tXc8Wo9T5t1vwnf6MC1wny+orAYYOK9x+J6J/ZsnyjgHtXiE3+sNeLxTllLLq3LS2ZJGTiky1A6Gkr4mUru5Y4kk8VPa2z3EgQcZqutbGhAGdcgGsa1R04OSIqSsrmjaeGZpo94Unv0pLvRHswTKmMDNex+EreB9MhLQRklecqOa4/wAfIqO4VQBk9BXy1PNatWtyNaI8ani5zqOL6HmcxwxVuMVSuH3KBVu6+9JVKX+tfQP4T16a2IaKKK5zoP/Z"}, "chapters": [{"id": "cover", "num": "0", "title": "Cover & Title", "subs": [{"id": "cover-main", "title": "Cover & Title", "isRoot": true, "isCover": true}]}, {"id": "intro", "num": "1", "title": "Introduction", "subs": [{"id": "intro-main", "title": "Introduction", "isRoot": true}]}, {"id": "felt", "num": "2", "title": "The Felt", "subs": [{"id": "felt-exposure", "title": "Exposure"}, {"id": "felt-intermission", "title": "Intermission"}, {"id": "felt-pulse", "title": "Pulse&BloodFlow"}]}, {"id": "pushpull", "num": "3", "title": "Push&Pull", "subs": [{"id": "pushpull-gamble", "title": "A Gamble"}, {"id": "pushpull-tether", "title": "Last Tether"}]}, {"id": "glitches", "num": "4", "title": "Glitches", "subs": [{"id": "glitches-trope", "title": "Cheap Trope vs. Distortion Masking"}, {"id": "glitches-visage", "title": "MultiFaced Visage"}, {"id": "glitches-trail", "title": "Unwoven Trail"}]}, {"id": "guardian", "num": "5", "title": "Shrouded Guardian", "subs": [{"id": "guardian-hei", "title": "He&I"}, {"id": "guardian-fidgets", "title": "The Clutch of Fidgets"}, {"id": "guardian-promise", "title": "Unfulfilled Promise"}, {"id": "guardian-hword", "title": "The H- Word"}]}, {"id": "sharplight", "num": "6", "title": "Sharp Light&Defined Edges", "subs": [{"id": "sharplight-main", "title": "Sharp Light&Defined Edges", "isRoot": true}]}, {"id": "unsaid", "num": "7", "title": "All Things Left Unsaid", "subs": [{"id": "unsaid-main", "title": "All Things Left Unsaid", "isRoot": true}]}, {"id": "closing", "num": "8", "title": "Closing Wordsmith", "subs": [{"id": "closing-main", "title": "Closing Wordsmith", "isRoot": true}]}], "lyrics": [{"t": "0:15", "line": "i been waitin' on you"}, {"t": "0:19", "line": "stuck in rain showers, i been prayin' for june"}, {"t": "0:23", "line": "22 hours and i'm fading from view"}, {"t": "0:27", "line": "but i just wanna know about you"}, {"t": "0:31", "line": "just wanna know about you"}, {"t": "0:34", "line": "where ya been, boy?"}, {"t": "0:36", "line": "i was dancing on the ice, gettin' thin, boy"}, {"t": "0:40", "line": "and yeah, you got that thing, boy"}, {"t": "0:43", "line": "put your hands on me and it's the medicine, boy"}, {"t": "0:46", "line": "'cause 22 years got me feelin' like a lifetime"}, {"t": "0:50", "line": "22 years, maybe you could be the lifeline"}, {"t": "0:54", "line": "whatcha think, boy?"}, {"t": "0:56", "line": "can you handle all the baggage, or ya sink, boy?"}, {"t": "1:00", "line": "i been waitin' on you"}, {"t": "1:04", "line": "stuck in rain showers, i been prayin' for june"}, {"t": "1:08", "line": "22 hours and i'm fading from view"}, {"t": "1:12", "line": "but i just wanna know about you"}, {"t": "1:16", "line": "just wanna know about you"}, {"t": "1:20", "line": "so don't let me fade away now"}, {"t": "1:24", "line": "just keep your eyes on me"}, {"t": "1:28", "line": "don't be another letdown"}, {"t": "1:32", "line": "oh baby, don't you see"}, {"t": "1:36", "line": "22 years got me feelin' like a lifetime"}, {"t": "1:40", "line": "22 years, maybe you could be the lifeline"}, {"t": "1:44", "line": "don't let me fade away now"}, {"t": "1:48", "line": "you don't know what i've seen"}, {"t": "1:54", "line": "what i've seen"}, {"t": "2:00", "line": "will you come for me?"}, {"t": "2:08", "line": "and you won't come for me"}, {"t": "2:16", "line": "and you won't come for me"}, {"t": "2:23", "line": "i been waitin' on you"}, {"t": "2:27", "line": "stuck in rain showers, i been prayin' for june"}, {"t": "2:31", "line": "22 hours and i'm fading from view"}, {"t": "2:35", "line": "but i just wanna know about you"}, {"t": "2:39", "line": "just wanna know about you"}]};
 
     const STORAGE_KEY = "nate_writing_studio_vault_v1";
     const SKINS_STORAGE_KEY = "nate_writing_studio_skins_v1";
@@ -2190,6 +2237,36 @@ Closing</textarea>
       };
     }
 
+    /* a1.9: each essay carries its own song, lyrics, art and link; only the 22hrs essay falls back to 22hrs */
+    const ESSAY_22 = "essay-22hrs";
+    const is22 = (d) => Boolean(d && d.id === ESSAY_22);
+    function docArt(d) {
+      return (d && d.coverArt) || (is22(d) ? DB.meta.visualizerArt : "");
+    }
+    function docSong(d) {
+      if (!d.song || typeof d.song !== "object") {
+        d.song = is22(d)
+          ? { title: "KAIA - 22hrs", len: 165, lyrics: DB.lyrics.map((x) => ({ t: x.t, line: x.line })) }
+          : { title: "", len: 0, lyrics: [] };
+      }
+      if (!Array.isArray(d.song.lyrics)) d.song.lyrics = [];
+      return d.song;
+    }
+    function docLink(d) {
+      return (d && d.reelUrl) || "";
+    }
+    function docLinkLabel(d) {
+      if (d.reelLabel) return d.reelLabel;
+      return is22(d) ? "KAIA - 22hrs (Fan-made Visualizer) · Watch Reel (" + (d.handle || DB.meta.handle) + ")" : "Watch";
+    }
+    function docArtStripText(d) {
+      if (is22(d)) return { title: "KAIA - 22hrs (Fan-made Visualizer)", sub: "pivotal track and the inspiration for the essay" };
+      return { title: docSong(d).title || d.title, sub: "" };
+    }
+    function escHtml(t) {
+      return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
     const DEFAULT_CAPTION_PRESETS = [
       "22hrs Fan-Made Visualizer - Sequence - ",
       "22hrs Fan-Made Visualizer - Frame ",
@@ -2233,7 +2310,7 @@ Closing</textarea>
               if (!d.scratchpads) d.scratchpads = {};
               if (!d.author) d.author = DB.meta.author || "Nate";
               if (!d.handle) d.handle = DB.meta.handle || "@IZ.NENAD.AN";
-              if (!d.reelUrl) d.reelUrl = DB.meta.reelUrl || "https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==";
+              if (!d.reelUrl && d.id === "essay-22hrs") d.reelUrl = DB.meta.reelUrl;
               if (d.chapters && !d.chapters.some((c) => c.id === "cover" || (c.subs && c.subs[0] && c.subs[0].isCover))) {
                 d.chapters.unshift({
                   id: "cover",
@@ -2289,11 +2366,19 @@ Closing</textarea>
 
     function syncDocArtworkEverywhere(doc) {
       const targetDoc = doc || getActiveDoc();
-      const artSrc = (targetDoc && targetDoc.coverArt) ? targetDoc.coverArt : DB.meta.visualizerArt;
+      const artSrc = docArt(targetDoc);
       const anchorImg = document.getElementById("visualAnchorImg");
-      if (anchorImg) anchorImg.src = artSrc;
+      if (anchorImg) { if (artSrc) anchorImg.src = artSrc; else anchorImg.removeAttribute("src"); }
       const heroImg = document.getElementById("coverHeroImg");
-      if (heroImg) heroImg.src = artSrc;
+      if (heroImg) { if (artSrc) heroImg.src = artSrc; else heroImg.removeAttribute("src"); }
+      const frame = document.querySelector(".cover-hero-frame");
+      if (frame) frame.classList.toggle("is-empty", !artSrc);
+      const strip = docArtStripText(targetDoc);
+      const st = document.getElementById("artStripTitle");
+      if (st) st.textContent = strip.title;
+      const ss = document.getElementById("artStripSub");
+      if (ss) { ss.textContent = strip.sub; ss.style.display = strip.sub ? "" : "none"; }
+      syncSongToDome(targetDoc);
     }
 
     function renderPieceList() {
@@ -2596,11 +2681,14 @@ Closing</textarea>
       document.getElementById("coverMainTitle").textContent = doc.title;
       document.getElementById("coverByline").textContent = "Authored by: " + (doc.author || "Nate");
       document.getElementById("coverOpeningQuote").textContent = doc.subtitle || DB.meta.essaySubtitle;
-      const reelUrl = doc.reelUrl || DB.meta.reelUrl;
+      const reelUrl = docLink(doc);
       const reelLink = document.getElementById("coverReelLink");
       const igBadge = document.getElementById("coverIgBadge");
-      reelLink.href = reelUrl;
-      igBadge.href = reelUrl;
+      if (reelUrl) { reelLink.href = reelUrl; igBadge.href = reelUrl; }
+      else { reelLink.removeAttribute("href"); igBadge.removeAttribute("href"); }
+      reelLink.classList.toggle("is-none", !reelUrl);
+      document.getElementById("coverReelLabel").textContent = "▶ " + docLinkLabel(doc) + " ↗";
+      document.getElementById("btnEditReelUrl").textContent = reelUrl ? "Edit Link" : "Add Link";
 
       const tocList = document.getElementById("coverTocList");
       tocList.innerHTML = "";
@@ -2632,6 +2720,7 @@ Closing</textarea>
       const doc = getActiveDoc();
       syncDocArtworkEverywhere(doc);
       document.getElementById("headerDocTitle").textContent = doc.title;
+      document.title = doc.title + " - Holographic Studio " + DB.meta.version;
       const mobTitle = document.getElementById("mobTitle");
       if (mobTitle) mobTitle.textContent = doc.title;
 
@@ -2660,7 +2749,7 @@ Closing</textarea>
 
       coverEl.classList.remove("is-active");
       singleEl.style.display = "block";
-      if (artStrip) artStrip.style.display = "";
+      if (artStrip) artStrip.style.display = docArt(doc) ? "" : "none";
 
       const knownMoods = new Set(["intro", "felt", "pushpull", "glitches", "guardian", "sharplight", "unsaid", "closing"]);
       document.body.setAttribute("data-chapter-mood", knownMoods.has(current.chapterId) ? current.chapterId : "intro");
@@ -2698,7 +2787,10 @@ Closing</textarea>
     function renderFullEssay() {
       const doc = getActiveDoc();
       const container = document.getElementById("fullEssayView");
-      const reelUrl = doc.reelUrl || DB.meta.reelUrl;
+      const reelUrl = docLink(doc);
+      const linkBar = reelUrl
+        ? `<div class="cover-link-bar" style="margin-bottom:26px;"><a class="cover-reel-anchor" href="${escHtml(reelUrl)}" target="_blank" rel="noopener noreferrer">&#9654; ${escHtml(docLinkLabel(doc))} &#8599;</a></div>`
+        : `<div style="margin-bottom:26px;"></div>`;
       container.innerHTML = `
         <div class="cover-title-block" style="margin-bottom:18px;">
           <div class="cover-kicker">${doc.handle || "@IZ.NENAD.AN"} &middot; COMPLETE ESSAY VIEW</div>
@@ -2706,11 +2798,7 @@ Closing</textarea>
           <div class="cover-byline">Authored by: ${doc.author || "Nate"}</div>
         </div>
         <blockquote class="cover-opening-quote" style="margin-bottom:14px;">${doc.subtitle || DB.meta.essaySubtitle}</blockquote>
-        <div class="cover-link-bar" style="margin-bottom:26px;">
-          <a class="cover-reel-anchor" href="${reelUrl}" target="_blank" rel="noopener noreferrer">
-            &#9654; KAIA - 22hrs (Fan-made Visualizer) &middot; Watch Reel (${doc.handle || "@IZ.NENAD.AN"}) &#8599;
-          </a>
-        </div>
+        ${linkBar}
       `;
       doc.chapters.forEach((ch) => {
         if (ch.id === "cover" || (ch.subs[0] && ch.subs[0].isCover)) return;
@@ -2964,20 +3052,35 @@ Closing</textarea>
       return `${m}:${s}`;
     }
 
-    let currentActiveLyric = DB.lyrics[2];
+    /* a1.9: the lyrics belong to the active essay's song; untimed lines are listed but never synced */
+    function activeLyrics() {
+      return docSong(getActiveDoc()).lyrics;
+    }
+    function timedLyrics() {
+      return activeLyrics().filter((x) => /^\d+:\d{2}$/.test(x.t || ""));
+    }
+    let currentActiveLyric = null;
 
     function renderLyrics() {
       const box = document.getElementById("lyricsContainer");
       box.innerHTML = "";
-      DB.lyrics.forEach((item) => {
+      const song = docSong(getActiveDoc());
+      document.getElementById("lyricsHeadLabel").textContent = (song.title || "This essay's song") + " · Click any line to stamp cue";
+      if (!song.lyrics.length) {
+        box.innerHTML = `<div class="lyric-empty">No lyrics for this song yet. Press Edit to paste them, then Tap to time while the song plays.</div>`;
+        return;
+      }
+      song.lyrics.forEach((item) => {
         const btn = document.createElement("button");
         btn.className = "lyric-line-btn";
-        btn.dataset.sec = String(parseTimestampSec(item.t));
-        btn.innerHTML = `<span class="lyric-ts">${item.t}</span><span>${item.line}</span>`;
+        const timed = /^\d+:\d{2}$/.test(item.t || "");
+        btn.dataset.sec = timed ? String(parseTimestampSec(item.t)) : "";
+        btn.innerHTML = `<span class="lyric-ts">${timed ? item.t : "-:--"}</span><span></span>`;
+        btn.lastElementChild.textContent = item.line;
         btn.onclick = () => {
-          insertCueChip(item.t, item.line);
+          insertCueChip(timed ? item.t : currentPlayerStamp(), item.line);
           const player = document.getElementById("trackPlayer");
-          if (player && player.src) {
+          if (timed && player && player.getAttribute("src")) {
             player.currentTime = parseTimestampSec(item.t);
             player.play().catch(() => {});
           }
@@ -2988,19 +3091,59 @@ Closing</textarea>
 
     function syncActiveLyric(currentSec) {
       const rows = Array.from(document.querySelectorAll(".lyric-line-btn"));
-      let matched = DB.lyrics[0];
+      const all = activeLyrics();
+      let matched = null;
       let activeBtn = null;
-      for (let i = 0; i < DB.lyrics.length; i++) {
-        const sec = parseTimestampSec(DB.lyrics[i].t);
-        if (currentSec >= sec) {
-          matched = DB.lyrics[i];
+      all.forEach((item, i) => {
+        if (!/^\d+:\d{2}$/.test(item.t || "")) return;
+        if (currentSec >= parseTimestampSec(item.t) && (!matched || parseTimestampSec(item.t) >= parseTimestampSec(matched.t))) {
+          matched = item;
           activeBtn = rows[i];
-        } else break;
-      }
+        }
+      });
+      if (!matched) matched = timedLyrics()[0] || null;
       currentActiveLyric = matched;
-      document.getElementById("domeLiveLyric").textContent = `[${matched.t}] "${matched.line}"`;
+      const live = document.getElementById("domeLiveLyric");
+      if (matched) live.textContent = `[${matched.t}] "${matched.line}"`;
+      else live.textContent = all.length ? "Lyrics not timed yet · Lyrics ▴ › Edit › Tap to time" : "No lyrics yet · Lyrics ▴ › Edit to add them";
       rows.forEach((r) => r.classList.remove("is-active-lyric"));
       if (activeBtn) activeBtn.classList.add("is-active-lyric");
+    }
+
+    /* a1.9: the player's time as a cue stamp */
+    function currentPlayerStamp() {
+      const player = document.getElementById("trackPlayer");
+      return player && player.getAttribute("src") && player.currentTime > 0 ? formatTime(player.currentTime) : "0:00";
+    }
+
+    /* a1.9: the dome shows the active essay's song; switching essays stops the other one's MP3 */
+    let domeDocId = null;
+    function syncSongToDome(doc) {
+      const d = doc || getActiveDoc();
+      const song = docSong(d);
+      const player = document.getElementById("trackPlayer");
+      const btnPlay = document.getElementById("btnDomePlay");
+      if (domeDocId !== null && domeDocId !== d.id && player) {
+        player.pause();
+        player.removeAttribute("src");
+        player.load();
+        if (btnPlay) btnPlay.innerHTML = "&#9654;";
+        const scr = document.getElementById("domeScrubber");
+        if (scr) { scr.value = "0"; scr.max = String(song.len || 0); }
+      }
+      if (domeDocId !== d.id) {
+        domeDocId = d.id;
+        document.getElementById("domeTrackLabel").textContent = song.title || "No song yet";
+        document.getElementById("domeTimecode").textContent = "0:00 / " + (song.len ? formatTime(song.len) : "-:--");
+        if (typeof renderLyrics === "function") renderLyrics();
+        syncActiveLyric(0);
+        if (is22(d) && song.lyrics[2] && !(player && player.getAttribute("src"))) {
+          currentActiveLyric = song.lyrics[2];   // the 22hrs essay rests on its 0:23 line, as before
+          document.getElementById("domeLiveLyric").textContent = `[${song.lyrics[2].t}] "${song.lyrics[2].line}"`;
+        }
+        const drawer = document.getElementById("lyricsDrawer");
+        if (drawer) drawer.classList.remove("is-editing", "is-tapping");
+      }
     }
 
 
@@ -3245,10 +3388,17 @@ Closing</textarea>
     }
 
     function buildHolographicExportDocument(doc, autoPrint) {
-      const reelUrl = doc.reelUrl || DB.meta.reelUrl;
+      const reelUrl = docLink(doc);
       const handle = doc.handle || "@IZ.NENAD.AN";
       const author = doc.author || "Nate";
-      const heroArt = doc.coverArt || DB.meta.visualizerArt;
+      const heroArt = docArt(doc);
+      const heroHtml = heroArt
+        ? `<div class="hero-banner"><img src="${heroArt}" alt="${escHtml(docArtStripText(doc).title)}" />` +
+          (reelUrl ? `<a class="ig-pill" href="${escHtml(reelUrl)}" target="_blank" rel="noopener noreferrer">${handle}</a>` : `<span class="ig-pill">${handle}</span>`) + `</div>`
+        : "";
+      const reelHtml = reelUrl
+        ? `<div><a class="reel-link" href="${escHtml(reelUrl)}" target="_blank" rel="noopener noreferrer">&#9654; ${escHtml(docLinkLabel(doc))} &#8599;</a></div>`
+        : "";
       const fontMap = {
         serif: "'Georgia', 'Palatino Linotype', 'Book Antiqua', serif",
         sans: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
@@ -3819,18 +3969,11 @@ Closing</textarea>
 
   <main class="doc-shell">
     <section id="page-cover" class="cover-sheet">
-      <div class="hero-banner">
-        <img src="${heroArt}" alt="KAIA - 22hrs Visualizer" />
-        <a class="ig-pill" href="${reelUrl}" target="_blank" rel="noopener noreferrer">${handle}</a>
-      </div>
+      ${heroHtml}
       <h1 class="cover-title">${doc.title}</h1>
       <div class="cover-author">Authored by: ${author}</div>
       <blockquote class="cover-quote">${doc.subtitle || DB.meta.essaySubtitle}</blockquote>
-      <div>
-        <a class="reel-link" href="${reelUrl}" target="_blank" rel="noopener noreferrer">
-          &#9654; KAIA - 22hrs (Fan-made Visualizer) &middot; Watch the reel &#8599;
-        </a>
-      </div>
+      ${reelHtml}
       <div class="toc-panel">
         <div class="toc-title">Table of Contents</div>
         ${coverTocHtml}
@@ -3928,7 +4071,8 @@ Closing</textarea>
       if (kind === "json") {
         sendVault();
       } else if (kind === "md") {
-        let md = `# ${doc.title}\n**Authored by:** ${doc.author || "Nate"} (${doc.handle || "@IZ.NENAD.AN"})\n\n> ${doc.subtitle}\n\n[KAIA - 22hrs Visualizer Reel](${doc.reelUrl || DB.meta.reelUrl})\n\n---\n\n`;
+        let md = `# ${doc.title}\n**Authored by:** ${doc.author || "Nate"} (${doc.handle || "@IZ.NENAD.AN"})\n\n> ${doc.subtitle}\n\n` +
+          (docLink(doc) ? `[${docLinkLabel(doc)}](${docLink(doc)})\n\n` : "") + `---\n\n`;
         doc.chapters.forEach((ch) => {
           if (ch.id === "cover" || (ch.subs[0] && ch.subs[0].isCover)) return;
           md += `## ${ch.num}. ${ch.title}\n\n`;
@@ -3963,6 +4107,7 @@ Closing</textarea>
       loadCustomSkins();
       loadVault();
       applyA18Fixes();
+      applyA19Fixes();
       startSpatialLoop();
 
       syncDocArtworkEverywhere(getActiveDoc());
@@ -4243,20 +4388,27 @@ Closing</textarea>
 
       document.getElementById("btnEditReelUrl").onclick = () => {
         const doc = getActiveDoc();
-        const currentUrl = doc.reelUrl || DB.meta.reelUrl;
-        const nextUrl = window.prompt("Enter Instagram Reel / Visualizer URL:", currentUrl);
-        if (nextUrl && nextUrl.trim()) {
-          doc.reelUrl = nextUrl.trim();
+        const nextUrl = window.prompt("Link address for this essay (leave empty to remove the link):", docLink(doc));
+        if (nextUrl === null) return;
+        if (!nextUrl.trim()) {
+          doc.reelUrl = "";
           saveVault();
           renderCoverPage(doc);
-          whisper("Visualizer Reel link updated");
+          whisper("Link removed");
+          return;
         }
+        const nextLabel = window.prompt("Words the link shows:", docLinkLabel(doc));
+        doc.reelUrl = nextUrl.trim();
+        if (nextLabel !== null && nextLabel.trim()) doc.reelLabel = nextLabel.trim();
+        saveVault();
+        renderCoverPage(doc);
+        whisper("Link updated");
       };
 
       function insertCurrentAudioCue() {
         const player = document.getElementById("trackPlayer");
-        let stamp = currentActiveLyric ? currentActiveLyric.t : "0:23";
-        let line = currentActiveLyric ? currentActiveLyric.line : "22hrs cue";
+        let stamp = currentActiveLyric ? currentActiveLyric.t : "0:00";
+        let line = currentActiveLyric ? currentActiveLyric.line : (docSong(getActiveDoc()).title || "cue");
         if (player && !isNaN(player.currentTime) && player.currentTime > 0) {
           stamp = formatTime(player.currentTime);
         }
@@ -4513,15 +4665,18 @@ Closing</textarea>
         const file = e.target.files && e.target.files[0];
         if (!file) return;
         player.src = URL.createObjectURL(file);
-        document.getElementById("domeTrackLabel").textContent = file.name.replace(/\.[^.]+$/, "");
+        const song = docSong(getActiveDoc());
+        if (!song.title) { song.title = file.name.replace(/\.[^.]+$/, ""); saveVault(); renderLyrics(); }
+        document.getElementById("domeTrackLabel").textContent = song.title;
         player.play().catch(() => {});
         btnPlay.innerHTML = "&#10074;&#10074;";
         whisper("Loaded audio: " + file.name);
       };
 
       btnPlay.onclick = () => {
-        if (!player.src) {
-          whisper("Load KAIA - 22hrs MP3 first");
+        if (!player.getAttribute("src")) {
+          const t = docSong(getActiveDoc()).title;
+          whisper(t ? "Load the " + t + " MP3 first" : "Load this essay's song (MP3) first");
           return;
         }
         if (player.paused) {
@@ -4534,29 +4689,106 @@ Closing</textarea>
       };
 
       player.addEventListener("loadedmetadata", () => {
+        const song = docSong(getActiveDoc());
+        if (player.duration && Math.round(player.duration) !== song.len) { song.len = Math.round(player.duration); saveVault(); }
         scrubber.max = String(Math.floor(player.duration || 165));
         timecodeEl.textContent = `0:00 / ${formatTime(player.duration)}`;
       });
 
       player.addEventListener("timeupdate", () => {
         scrubber.value = String(player.currentTime);
-        timecodeEl.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration || 165)}`;
+        timecodeEl.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration || docSong(getActiveDoc()).len || 0)}`;
         syncActiveLyric(player.currentTime);
         pulseRgbPillars();
       });
 
       scrubber.addEventListener("input", () => {
-        if (player.src) player.currentTime = parseFloat(scrubber.value);
+        if (player.getAttribute("src")) player.currentTime = parseFloat(scrubber.value);
         syncActiveLyric(parseFloat(scrubber.value));
       });
 
       document.getElementById("domeLiveLyric").onclick = () => {
         if (currentActiveLyric) insertCueChip(currentActiveLyric.t, currentActiveLyric.line);
+        else lyricsDrawer.classList.add("is-open");
       };
 
       const lyricsDrawer = document.getElementById("lyricsDrawer");
       document.getElementById("btnToggleLyrics").onclick = () => lyricsDrawer.classList.toggle("is-open");
-      document.getElementById("btnCloseLyrics").onclick = () => lyricsDrawer.classList.remove("is-open");
+      document.getElementById("btnCloseLyrics").onclick = () => lyricsDrawer.classList.remove("is-open", "is-editing", "is-tapping");
+
+      /* a1.9: paste this song's lyrics, then time them by tapping Mark while it plays */
+      const lyricsEditText = document.getElementById("lyricsEditText");
+      function parseLyricLines(text) {
+        return text.split(/\n/).map((l) => l.trim()).filter(Boolean).map((l) => {
+          const m = l.match(/^\[?(\d{1,2}):(\d{2})(?:\.\d+)?\]?\s+(.+)$/);
+          return m ? { t: `${parseInt(m[1], 10)}:${m[2]}`, line: m[3].trim() } : { t: "", line: l };
+        });
+      }
+      function lyricsToText(list) {
+        return list.map((x) => (x.t ? x.t + " " : "") + x.line).join("\n");
+      }
+      document.getElementById("btnEditLyrics").onclick = () => {
+        lyricsEditText.value = lyricsToText(activeLyrics());
+        lyricsDrawer.classList.remove("is-tapping");
+        lyricsDrawer.classList.toggle("is-editing");
+        if (lyricsDrawer.classList.contains("is-editing")) lyricsEditText.focus();
+      };
+      document.getElementById("btnLyricsCancel").onclick = () => lyricsDrawer.classList.remove("is-editing");
+      function saveLyricsFromBox() {
+        docSong(getActiveDoc()).lyrics = parseLyricLines(lyricsEditText.value);
+        saveVault();
+        renderLyrics();
+        syncActiveLyric(player.currentTime || 0);
+      }
+      document.getElementById("btnLyricsSave").onclick = () => {
+        saveLyricsFromBox();
+        lyricsDrawer.classList.remove("is-editing");
+        whisper("Lyrics saved");
+      };
+      let tapIndex = 0;
+      function showTapLine() {
+        const list = activeLyrics();
+        const now = list[tapIndex];
+        document.getElementById("tapStatus").textContent = now
+          ? `Line ${tapIndex + 1} of ${list.length} · tap Mark the moment it starts`
+          : `All ${list.length} lines timed · press Done`;
+        document.getElementById("tapNow").textContent = now ? now.line : "Done";
+        const next = list[tapIndex + 1];
+        document.getElementById("tapNext").textContent = next ? "next: " + next.line : "";
+        document.getElementById("btnTapMark").disabled = !now;
+      }
+      document.getElementById("btnLyricsTap").onclick = () => {
+        saveLyricsFromBox();
+        if (!activeLyrics().length) { whisper("Paste the lyrics first"); return; }
+        if (!player.getAttribute("src")) { whisper("Load the song's MP3 first, then Tap to time"); return; }
+        tapIndex = 0;
+        lyricsDrawer.classList.remove("is-editing");
+        lyricsDrawer.classList.add("is-tapping");
+        showTapLine();
+        player.currentTime = 0;
+        player.play().catch(() => {});
+        btnPlay.innerHTML = "&#10074;&#10074;";
+      };
+      document.getElementById("btnTapMark").onclick = () => {
+        const list = activeLyrics();
+        if (!list[tapIndex]) return;
+        list[tapIndex].t = formatTime(player.currentTime || 0);
+        tapIndex++;
+        saveVault();
+        showTapLine();
+      };
+      document.getElementById("btnTapBack").onclick = () => {
+        if (tapIndex > 0) tapIndex--;
+        player.currentTime = Math.max(0, (player.currentTime || 0) - 3);
+        showTapLine();
+      };
+      document.getElementById("btnTapDone").onclick = () => {
+        lyricsDrawer.classList.remove("is-tapping");
+        saveVault();
+        renderLyrics();
+        syncActiveLyric(player.currentTime || 0);
+        whisper("Lyrics timed");
+      };
 
       const unsaidModal = document.getElementById("unsaidModal");
       document.getElementById("btnOpenUnsaid").onclick = () => unsaidModal.classList.add("is-open");
@@ -4611,7 +4843,8 @@ Closing</textarea>
           title,
           author: DB.meta.author || "Nate",
           handle: DB.meta.handle || "@IZ.NENAD.AN",
-          reelUrl: DB.meta.reelUrl,
+          reelUrl: "",
+          song: { title: "", len: 0, lyrics: [] },
           subtitle: sub,
           chapters,
           sections,
@@ -4681,7 +4914,7 @@ Closing</textarea>
           const openOnes = panels.filter((m) => m.classList.contains("is-open"));
           const phoneOpen = document.body.classList.contains("nav-open") || document.body.classList.contains("tools-open");
           if (openOnes.length || phoneOpen) {
-            openOnes.forEach((m) => m.classList.remove("is-open"));
+            openOnes.forEach((m) => m.classList.remove("is-open", "is-editing", "is-tapping"));
             closePhonePanels();
           } else {
             toggleFocusMode();
@@ -4716,6 +4949,16 @@ Closing</textarea>
         d.subtitle = DB.meta.essaySubtitle;
       }
       vault.fixA18 = true;
+      saveVault();
+    }
+
+    /* a1.9: once - essays other than 22hrs drop the 22hrs link they inherited */
+    function applyA19Fixes() {
+      if (vault.fixA19) return;
+      Object.values(vault.docs).forEach((d) => {
+        if (d.id !== ESSAY_22 && d.reelUrl === DB.meta.reelUrl && !d.reelLabel) d.reelUrl = "";
+      });
+      vault.fixA19 = true;
       saveVault();
     }
 
