@@ -1,0 +1,4730 @@
+<!DOCTYPE html>
+<html lang="en" data-skin="rgb-triple-holo" data-body-font="serif">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data: blob: https:; media-src blob: data:;" />
+<title>The Push&amp;Pull, Glitches, and the Shrouded Guardian - Holographic Studio a1.8</title>
+<style>
+  :root {
+    --bg: #020307;
+    --void-deep: #010205;
+    --holo: #8fd6ff;
+    --holo-bright: #d4f0ff;
+    --holo-dim: color-mix(in srgb, var(--holo) 22%, transparent);
+    --holo-glass: rgba(8, 15, 28, 0.42);
+    --amber: #f2b25c;
+    --veil: #a58bff;
+    --rgb-r: #ff3d66;
+    --rgb-g: #5affb8;
+    --rgb-b: #5ca8ff;
+    --ink: #f4f9fd;
+    --ink-body: #e7f1fa;
+    --dim: #a9bed4;
+    --dim-muted: #667b94;
+    --grid-line: color-mix(in srgb, var(--holo) 8.5%, transparent);
+    --grid-horizon: color-mix(in srgb, var(--rgb-r) 14%, transparent);
+    --glitch-level: 0.35;
+    --glitch-shift: 1.5px;
+    --veil-opacity: 0;
+    --font-display: "Cinzel", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    --font-ui: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    --font-serif: "Georgia", "Palatino Linotype", "Book Antiqua", serif;
+    --font-sans: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    --font-mono: "Cascadia Code", "Consolas", monospace;
+    --font-writing: var(--font-serif);
+  }
+
+  html[data-body-font="serif"] { --font-writing: var(--font-serif); }
+  html[data-body-font="sans"]  { --font-writing: var(--font-sans); }
+  html[data-body-font="mono"]  { --font-writing: var(--font-mono); }
+
+  body[data-chapter-mood="intro"]      { --glitch-level: 0.3;  --glitch-shift: 1.5px; --veil-opacity: 0; }
+  body[data-chapter-mood="felt"]       { --glitch-level: 0.45; --glitch-shift: 2px;   --veil-opacity: 0; }
+  body[data-chapter-mood="pushpull"]   { --glitch-level: 0.55; --glitch-shift: 2.5px; --veil-opacity: 0; }
+  body[data-chapter-mood="glitches"]   { --glitch-level: 1.0;  --glitch-shift: 4.5px; --veil-opacity: 0; }
+  body[data-chapter-mood="guardian"]   { --glitch-level: 0.25; --glitch-shift: 1px;   --veil-opacity: 0.72; }
+  body[data-chapter-mood="sharplight"] { --glitch-level: 0.15; --glitch-shift: 0px;   --veil-opacity: 0; }
+  body[data-chapter-mood="unsaid"]     { --glitch-level: 0.18; --glitch-shift: 1px;   --veil-opacity: 0.35; }
+  body[data-chapter-mood="closing"]    { --glitch-level: 0.4;  --glitch-shift: 1.8px; --veil-opacity: 0; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink-body);
+    font-family: var(--font-ui);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #spatialCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .holo-grid-stage {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 65% 55% at 50% 42%, color-mix(in srgb, var(--holo) 9%, var(--bg)) 0%, color-mix(in srgb, var(--bg) 94%, transparent) 85%),
+      linear-gradient(180deg, var(--bg) 0%, color-mix(in srgb, var(--bg) 88%, var(--holo)) 50%, var(--bg) 100%);
+  }
+
+  .holo-grid-floor {
+    position: absolute;
+    left: -25%;
+    right: -25%;
+    bottom: -12%;
+    height: 46%;
+    transform-origin: 50% 0%;
+    transform: perspective(520px) rotateX(68deg);
+    background-image:
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(0deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 64px 44px;
+    mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.95) 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.95) 100%);
+  }
+
+  .holo-scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.22;
+    background: repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--holo) 3%, transparent) 0px,
+      color-mix(in srgb, var(--holo) 3%, transparent) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  }
+
+  .orbital-svg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .guardian-shroud {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    opacity: var(--veil-opacity);
+    transition: opacity 0.6s ease;
+    background: radial-gradient(ellipse 58% 60% at 50% 45%, transparent 48%, rgba(3, 2, 10, 0.78) 100%);
+  }
+
+  .hud-top-left {
+    position: fixed;
+    top: 16px;
+    left: 20px;
+    width: 268px;
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    pointer-events: auto;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+
+  .mark-emitter {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--holo) 35%, transparent));
+  }
+
+  .brand-title-col { min-width: 0; }
+
+  .brand-title {
+    font-family: var(--font-display);
+    font-size: 13.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    text-shadow: -1px 0 var(--rgb-r), 1px 0 var(--rgb-b);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .brand-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--holo);
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+
+  .tether-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 12px;
+  }
+
+  .hud-micro-label {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--dim-muted);
+  }
+
+  .holo-mini-btn {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--holo) 28%, transparent);
+    color: var(--holo);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .holo-mini-btn:hover {
+    border-color: var(--holo-bright);
+    color: var(--ink);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--holo) 35%, transparent);
+  }
+
+  .tether-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: calc(100vh - 230px);
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .tether-list::-webkit-scrollbar { width: 3px; }
+  .tether-list::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--holo) 25%, transparent); }
+
+  .node-item {
+    position: relative;
+    background: transparent;
+    border: none;
+    color: var(--dim);
+    text-align: left;
+    padding: 5px 10px;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    transition: color 0.15s ease, transform 0.15s ease;
+  }
+
+  .node-item:hover {
+    color: var(--ink);
+    transform: translateX(2px);
+  }
+
+  .node-item .node-pip {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1px solid var(--holo);
+    background: transparent;
+    flex-shrink: 0;
+    transition: all 0.18s ease;
+  }
+
+  .node-item.has-words .node-pip {
+    background: var(--holo);
+    box-shadow: 0 0 6px var(--holo);
+  }
+
+  .node-item.is-blade-active {
+    color: var(--ink);
+    font-weight: 600;
+    padding: 8px 18px 8px 14px;
+    margin: 2px 0;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--holo) 16%, transparent) 0%, rgba(12, 24, 44, 0.55) 75%, color-mix(in srgb, var(--holo) 8%, transparent) 100%);
+    clip-path: polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 6px 50%);
+    filter: drop-shadow(-1.5px 0 0 color-mix(in srgb, var(--rgb-r) 55%, transparent)) drop-shadow(1.5px 0 0 color-mix(in srgb, var(--rgb-g) 55%, transparent));
+  }
+
+  .node-item.is-blade-active::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 6px 50%);
+    border: 1px solid var(--holo);
+    pointer-events: none;
+  }
+
+  .node-item.is-blade-active .node-pip {
+    background: var(--rgb-g);
+    border-color: var(--ink);
+    box-shadow: 0 0 9px var(--rgb-g), 0 0 4px var(--holo);
+  }
+
+  .node-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .node-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .node-wc {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--holo);
+    opacity: 0.78;
+    flex-shrink: 0;
+  }
+
+  .sub-branch {
+    padding-left: 16px;
+    margin-left: 7px;
+    border-left: 1px solid color-mix(in srgb, var(--holo) 16%, transparent);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .sub-branch .node-item {
+    font-size: 11.5px;
+    padding: 4px 14px 4px 10px;
+  }
+
+  .sub-branch .node-item.is-blade-active {
+    padding: 7px 18px 7px 14px;
+  }
+
+  .hud-top-right {
+    position: fixed;
+    top: 16px;
+    right: 22px;
+    width: 248px;
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+    pointer-events: auto;
+  }
+
+  .rgb-pillars-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+    height: 44px;
+    padding: 4px 6px;
+  }
+
+  .rgb-pillar {
+    width: 3px;
+    height: 100%;
+    border-radius: 2px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: visible;
+  }
+
+  .rgb-pillar-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 2px;
+    transition: height 0.16s ease;
+  }
+
+  .rgb-pillar.p-r .rgb-pillar-fill {
+    height: 78%;
+    background: var(--rgb-r);
+    box-shadow: 0 0 10px var(--rgb-r), 0 0 2px #fff;
+  }
+  .rgb-pillar.p-g .rgb-pillar-fill {
+    height: 62%;
+    background: var(--rgb-g);
+    box-shadow: 0 0 10px var(--rgb-g), 0 0 2px #fff;
+  }
+  .rgb-pillar.p-b .rgb-pillar-fill {
+    height: 88%;
+    background: var(--rgb-b);
+    box-shadow: 0 0 10px var(--rgb-b), 0 0 2px #fff;
+  }
+  .rgb-pillar.p-v .rgb-pillar-fill {
+    height: 54%;
+    background: var(--veil);
+    box-shadow: 0 0 10px var(--veil), 0 0 2px #fff;
+  }
+
+  .hud-rig-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .relay-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .relay-switch {
+    position: relative;
+    background: rgba(6, 11, 22, 0.65);
+    border: 1px solid color-mix(in srgb, var(--holo) 24%, transparent);
+    color: var(--dim);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+  }
+
+  .relay-switch .relay-led {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--holo) 20%, transparent);
+    transition: all 0.15s ease;
+  }
+
+  .relay-switch:hover {
+    border-color: var(--holo);
+    color: var(--ink);
+  }
+
+  .relay-switch.is-latched {
+    color: var(--ink);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--holo) 24%, transparent) 0%, rgba(14, 28, 52, 0.85) 100%);
+    border-color: var(--holo-bright);
+    box-shadow:
+      0 0 14px color-mix(in srgb, var(--holo) 38%, transparent),
+      -2px 0 6px color-mix(in srgb, var(--rgb-r) 35%, transparent),
+      2px 0 6px color-mix(in srgb, var(--rgb-g) 35%, transparent),
+      inset 0 -2px 0 var(--rgb-g);
+  }
+
+  .relay-switch.is-latched .relay-led {
+    background: var(--rgb-g);
+    box-shadow: 0 0 8px var(--rgb-g), 0 0 3px #fff;
+  }
+
+  .stage-viewport {
+    position: fixed;
+    top: 14px;
+    bottom: 138px;
+    left: 292px;
+    right: 268px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    transition: left 0.25s ease, right 0.25s ease, top 0.25s ease, bottom 0.25s ease;
+  }
+
+  body.focus-mode .stage-viewport {
+    left: 10%;
+    right: 10%;
+    top: 24px;
+    bottom: 28px;
+  }
+
+  body.focus-mode .hud-top-left,
+  body.focus-mode .hud-top-right,
+  body.focus-mode .audio-dome-wrap,
+  body.focus-mode .crescent-dock {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .holo-reticle {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    pointer-events: none;
+    z-index: 12;
+  }
+
+  .holo-reticle.tl {
+    top: 0; left: 0;
+    border-top: 1.5px solid var(--holo);
+    border-left: 1.5px solid var(--holo);
+    box-shadow: -2px -1px 0 color-mix(in srgb, var(--rgb-r) 55%, transparent), 2px 1px 0 color-mix(in srgb, var(--rgb-g) 45%, transparent);
+  }
+  .holo-reticle.tr {
+    top: 0; right: 0;
+    border-top: 1.5px solid var(--holo);
+    border-right: 1.5px solid var(--holo);
+    box-shadow: 2px -1px 0 color-mix(in srgb, var(--rgb-b) 55%, transparent), -2px 1px 0 color-mix(in srgb, var(--rgb-r) 45%, transparent);
+  }
+  .holo-reticle.bl {
+    bottom: 0; left: 0;
+    border-bottom: 1.5px solid var(--holo);
+    border-left: 1.5px solid var(--holo);
+    box-shadow: -2px 1px 0 color-mix(in srgb, var(--rgb-g) 55%, transparent);
+  }
+  .holo-reticle.br {
+    bottom: 0; right: 0;
+    border-bottom: 1.5px solid var(--holo);
+    border-right: 1.5px solid var(--holo);
+    box-shadow: 2px 1px 0 color-mix(in srgb, var(--rgb-r) 55%, transparent);
+  }
+
+  .telemetry-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--dim);
+    border-bottom: 1px solid color-mix(in srgb, var(--holo) 12%, transparent);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--holo) 4%, transparent), transparent 50%, color-mix(in srgb, var(--rgb-r) 4%, transparent));
+    flex-shrink: 0;
+  }
+
+  .armed-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .armed-pill {
+    padding: 2px 8px;
+    border-radius: 3px;
+    border: 1px solid color-mix(in srgb, var(--holo) 35%, transparent);
+    color: var(--holo-bright);
+    background: color-mix(in srgb, var(--holo) 9%, transparent);
+    letter-spacing: 0.06em;
+  }
+
+  .armed-pill.is-hot {
+    border-color: var(--rgb-g);
+    color: var(--rgb-g);
+    background: color-mix(in srgb, var(--rgb-g) 10%, transparent);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--rgb-g) 22%, transparent);
+  }
+
+  .stage-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 44px 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .stage-scroll::-webkit-scrollbar { width: 4px; }
+  .stage-scroll::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--holo) 25%, transparent); border-radius: 2px; }
+
+  .stage-column {
+    width: 100%;
+    max-width: 780px;
+  }
+
+  .holo-art-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 12px;
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, rgba(10, 18, 34, 0.58), rgba(4, 7, 14, 0.35));
+    border-left: 2px solid var(--rgb-r);
+    border-right: 2px solid var(--rgb-b);
+    border-top: 1px solid color-mix(in srgb, var(--holo) 16%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--holo) 16%, transparent);
+  }
+
+  .holo-art-strip.is-hidden { display: none; }
+
+  .holo-art-thumb {
+    width: 148px;
+    height: 66px;
+    object-fit: cover;
+    border: 1px solid color-mix(in srgb, var(--holo) 30%, transparent);
+    flex-shrink: 0;
+  }
+
+  .holo-art-title {
+    font-family: var(--font-display);
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--holo-bright);
+    letter-spacing: 0.05em;
+  }
+
+  .holo-art-sub {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--dim);
+    margin-top: 3px;
+  }
+
+  .crumb-line {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    color: var(--holo);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .chamber-title-holo {
+    position: relative;
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+    padding-bottom: 12px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid color-mix(in srgb, var(--holo) 18%, transparent);
+    text-shadow:
+      calc(var(--glitch-shift) * -1) 0 color-mix(in srgb, var(--rgb-r) 72%, transparent),
+      var(--glitch-shift) 0 color-mix(in srgb, var(--rgb-g) 68%, transparent);
+    transition: text-shadow 0.3s ease;
+  }
+
+  @keyframes rgbSliceGlitch {
+    0%   { transform: translate(0, 0); text-shadow: -3px 0 var(--rgb-r), 3px 0 var(--rgb-g); }
+    20%  { transform: translate(-3px, 1px) skewX(-4deg); text-shadow: 4px 0 var(--rgb-r), -4px 0 var(--rgb-b); }
+    40%  { transform: translate(3px, -1px) skewX(3deg); text-shadow: -4px 0 var(--rgb-g), 3px 0 var(--rgb-r); }
+    60%  { transform: translate(-2px, 0); text-shadow: 3px 0 var(--rgb-r), -3px 0 var(--rgb-g); }
+    80%  { transform: translate(2px, 1px); text-shadow: -2px 0 var(--rgb-b), 2px 0 var(--rgb-r); }
+    100% { transform: translate(0, 0); text-shadow: calc(var(--glitch-shift) * -1) 0 color-mix(in srgb, var(--rgb-r) 72%, transparent), var(--glitch-shift) 0 color-mix(in srgb, var(--rgb-g) 68%, transparent); }
+  }
+
+  .is-glitching {
+    animation: rgbSliceGlitch 0.36s steps(2, end) 2;
+  }
+
+  .echo-whisper {
+    display: none;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 7px 12px;
+    margin-bottom: 16px;
+    border-left: 2px solid var(--amber);
+    background: color-mix(in srgb, var(--amber) 6%, transparent);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  .echo-whisper.is-visible { display: flex; }
+
+  .echo-chip {
+    color: var(--amber);
+    border: 1px solid color-mix(in srgb, var(--amber) 32%, transparent);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  .writing-canvas {
+    min-height: 360px;
+    outline: none;
+    font-family: var(--font-writing);
+    font-size: 18px;
+    line-height: 1.86;
+    color: var(--ink-body);
+    caret-color: var(--rgb-g);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+
+  html[data-body-font="sans"] .writing-canvas { font-size: 17px; line-height: 1.8; }
+  html[data-body-font="mono"] .writing-canvas { font-size: 15.5px; line-height: 1.78; }
+
+  .writing-canvas:empty::before {
+    content: attr(data-placeholder);
+    color: var(--dim-muted);
+    font-style: italic;
+    pointer-events: none;
+  }
+
+  .writing-canvas p,
+  .writing-canvas div {
+    margin-bottom: 0.92em;
+    transition: opacity 0.25s ease;
+  }
+
+  body.typewriter-flow .writing-canvas > *:not(.is-focused-block) { opacity: 0.38; }
+  body.typewriter-flow .writing-canvas:hover > * { opacity: 0.88; }
+  body.typewriter-flow .writing-canvas > .is-focused-block { opacity: 1 !important; }
+
+  .writing-canvas blockquote {
+    border-left: 2px solid var(--holo);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--holo) 9%, transparent), transparent);
+    padding: 10px 16px;
+    margin: 16px 0;
+    color: var(--ink);
+    font-style: italic;
+  }
+
+  .cue-chip {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--rgb-g);
+    background: color-mix(in srgb, var(--rgb-g) 9%, transparent);
+    border: 1px solid color-mix(in srgb, var(--rgb-g) 38%, transparent);
+    border-radius: 3px;
+    padding: 1px 7px;
+    margin: 0 2px;
+  }
+
+  .stage-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 20px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--dim);
+    border-top: 1px solid color-mix(in srgb, var(--holo) 12%, transparent);
+    flex-shrink: 0;
+  }
+
+  .audio-dome-wrap {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 470px;
+    height: 132px;
+    z-index: 16;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 14px 36px 10px;
+    background: radial-gradient(ellipse 90% 100% at 50% 100%, rgba(12, 22, 38, 0.94) 0%, rgba(4, 7, 14, 0.96) 76%, rgba(2, 3, 7, 0.98) 100%);
+    border-top: 1.5px solid var(--holo);
+    border-left: 1px solid color-mix(in srgb, var(--holo) 35%, transparent);
+    border-right: 1px solid color-mix(in srgb, var(--holo) 35%, transparent);
+    border-radius: 240px 240px 0 0;
+    box-shadow:
+      0 -8px 34px color-mix(in srgb, var(--holo) 16%, transparent),
+      0 -2px 14px color-mix(in srgb, var(--rgb-r) 16%, transparent),
+      inset 0 2px 14px color-mix(in srgb, var(--holo) 14%, transparent);
+    transition: opacity 0.25s ease;
+  }
+
+  .audio-dome-wrap::before {
+    content: "";
+    position: absolute;
+    left: -4px;
+    bottom: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ink);
+    box-shadow: 0 0 12px var(--holo), 0 0 5px #fff;
+  }
+
+  .dome-top-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 5px;
+  }
+
+  .plasma-play-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1.5px solid var(--rgb-g);
+    background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--rgb-g) 35%, transparent) 0%, rgba(6, 16, 20, 0.9) 75%);
+    color: var(--ink);
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 16px color-mix(in srgb, var(--rgb-g) 42%, transparent);
+    transition: transform 0.1s ease, box-shadow 0.15s ease;
+  }
+
+  .plasma-play-btn:hover {
+    transform: scale(1.06);
+    box-shadow: 0 0 22px color-mix(in srgb, var(--rgb-g) 68%, transparent);
+  }
+
+  .dome-track-meta { text-align: center; }
+
+  .dome-track-name {
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+  }
+
+  .dome-timecode {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--holo);
+  }
+
+  .dome-scrubber {
+    width: 260px;
+    height: 4px;
+    appearance: none;
+    background: color-mix(in srgb, var(--holo) 18%, transparent);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    margin: 4px 0 6px;
+  }
+
+  .dome-scrubber::-webkit-slider-thumb {
+    appearance: none;
+    width: 10px;
+    height: 14px;
+    border-radius: 2px;
+    background: var(--ink);
+    border: 1px solid var(--rgb-g);
+    box-shadow: 0 0 10px var(--rgb-g);
+  }
+
+  .dome-live-lyric {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--rgb-g);
+    text-align: center;
+    max-width: 380px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  .dome-live-lyric:hover {
+    background: color-mix(in srgb, var(--rgb-g) 12%, transparent);
+    text-decoration: underline;
+  }
+
+  .crescent-dock {
+    position: fixed;
+    bottom: 14px;
+    right: 22px;
+    z-index: 16;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: opacity 0.25s ease;
+  }
+
+  .crescent-glyph {
+    width: 58px;
+    height: 76px;
+    pointer-events: none;
+    filter: drop-shadow(0 0 12px color-mix(in srgb, var(--holo) 45%, transparent));
+  }
+
+  .crescent-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
+  .holo-action-link {
+    background: transparent;
+    border: none;
+    border-right: 2px solid color-mix(in srgb, var(--holo) 35%, transparent);
+    padding: 3px 10px 3px 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--dim);
+    cursor: pointer;
+    text-align: right;
+    transition: all 0.15s ease;
+  }
+
+  .holo-action-link:hover, .holo-action-link.is-lit {
+    color: var(--ink);
+    border-right-color: var(--rgb-g);
+    text-shadow: 0 0 10px color-mix(in srgb, var(--holo) 50%, transparent);
+  }
+
+  .floating-exit-focus {
+    position: fixed;
+    top: 16px;
+    right: 24px;
+    z-index: 30;
+    display: none;
+  }
+  body.focus-mode .floating-exit-focus { display: inline-flex; }
+
+  .holo-drawer {
+    position: fixed;
+    bottom: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 480px;
+    max-height: 300px;
+    z-index: 25;
+    display: none;
+    flex-direction: column;
+    background: rgba(5, 9, 18, 0.94);
+    border: 1px solid var(--holo);
+    box-shadow: 0 0 36px rgba(0, 0, 0, 0.9), 0 0 18px color-mix(in srgb, var(--holo) 22%, transparent);
+    backdrop-filter: blur(10px);
+    padding: 12px 14px;
+  }
+
+  .holo-drawer.is-open { display: flex; }
+
+  .holo-drawer-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid color-mix(in srgb, var(--holo) 18%, transparent);
+    font-family: var(--font-display);
+    font-size: 12px;
+    color: var(--holo-bright);
+  }
+
+  .holo-drawer-list {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .lyric-line-btn {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    background: transparent;
+    border: none;
+    border-left: 2px solid transparent;
+    padding: 5px 8px;
+    text-align: left;
+    cursor: pointer;
+    color: var(--dim);
+    font-size: 12px;
+  }
+
+  .lyric-line-btn:hover, .lyric-line-btn.is-active-lyric {
+    color: var(--ink);
+    border-left-color: var(--rgb-g);
+    background: color-mix(in srgb, var(--rgb-g) 8%, transparent);
+  }
+
+  .lyric-ts {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--holo);
+    flex-shrink: 0;
+  }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(1, 2, 6, 0.86);
+    backdrop-filter: blur(6px);
+    z-index: 60;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-backdrop.is-open { display: flex; }
+
+  .holo-modal {
+    width: 100%;
+    max-width: 500px;
+    padding: 22px 24px;
+    background: linear-gradient(180deg, rgba(10, 18, 34, 0.96) 0%, rgba(4, 7, 14, 0.98) 100%);
+    border: 1px solid var(--holo);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.95), -2px 0 12px color-mix(in srgb, var(--rgb-r) 25%, transparent), 2px 0 12px color-mix(in srgb, var(--rgb-g) 25%, transparent);
+  }
+
+  .modal-title {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+
+  .modal-sub {
+    font-size: 12px;
+    color: var(--dim);
+    margin-bottom: 14px;
+    line-height: 1.55;
+  }
+
+  .field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 12px;
+  }
+
+  .field-row label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--holo);
+  }
+
+  .holo-input, .holo-textarea, .holo-select {
+    background: rgba(3, 6, 12, 0.9);
+    border: 1px solid color-mix(in srgb, var(--holo) 28%, transparent);
+    color: var(--ink);
+    padding: 7px 10px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    outline: none;
+  }
+
+  .holo-input:focus, .holo-textarea:focus, .holo-select:focus { border-color: var(--rgb-g); }
+
+  .holo-textarea {
+    min-height: 110px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .full-essay-h2 {
+    font-family: var(--font-display);
+    font-size: 21px;
+    color: var(--holo-bright);
+    margin: 26px 0 10px;
+  }
+
+  .full-essay-h3 {
+    font-family: var(--font-display);
+    font-size: 15.5px;
+    color: var(--rgb-g);
+    margin: 16px 0 8px;
+  }
+
+  .full-essay-body {
+    font-family: var(--font-writing);
+    font-size: 16.5px;
+    line-height: 1.82;
+    color: var(--ink-body);
+    white-space: pre-wrap;
+  }
+
+  .whisper-toast {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    z-index: 80;
+    background: rgba(5, 10, 20, 0.95);
+    border: 1px solid var(--rgb-g);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 6px 14px;
+    box-shadow: 0 0 20px color-mix(in srgb, var(--rgb-g) 28%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .whisper-toast.is-shown {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* === COVER PAGE CHAMBER (0. COVER & TITLE) === */
+  .cover-chamber {
+    display: none;
+    flex-direction: column;
+    gap: 22px;
+    padding-bottom: 24px;
+  }
+  .cover-chamber.is-active {
+    display: flex;
+  }
+
+  .cover-hero-frame {
+    position: relative;
+    border: 1px solid color-mix(in srgb, var(--holo) 34%, transparent);
+    background: #020307;
+    overflow: hidden;
+    box-shadow:
+      0 14px 40px rgba(0, 0, 0, 0.85),
+      -2px 0 14px color-mix(in srgb, var(--rgb-r) 28%, transparent),
+      2px 0 14px color-mix(in srgb, var(--rgb-g) 25%, transparent);
+  }
+
+  .cover-hero-img {
+    display: block;
+    width: 100%;
+    max-height: 290px;
+    object-fit: cover;
+    filter: contrast(1.06) saturate(1.08);
+  }
+
+  .cover-ig-badge {
+    position: absolute;
+    left: 16px;
+    bottom: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    background: rgba(2, 4, 10, 0.82);
+    border: 1px solid color-mix(in srgb, var(--holo) 45%, transparent);
+    border-radius: 4px;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.85);
+    transition: all 0.16s ease;
+  }
+  .cover-ig-badge:hover {
+    border-color: var(--rgb-g);
+    color: var(--rgb-g);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--rgb-g) 35%, transparent);
+  }
+
+  .cover-title-block {
+    padding: 4px 0 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--holo) 20%, transparent);
+  }
+
+  .cover-kicker {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--holo);
+    margin-bottom: 8px;
+  }
+
+  .cover-main-title {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.24;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    text-shadow:
+      -1.5px 0 color-mix(in srgb, var(--rgb-r) 72%, transparent),
+      1.5px 0 color-mix(in srgb, var(--rgb-g) 68%, transparent);
+  }
+
+  .cover-byline {
+    margin-top: 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--rgb-g);
+    text-transform: uppercase;
+  }
+
+  .cover-opening-quote {
+    position: relative;
+    border-left: 2px solid var(--holo);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--holo) 9%, transparent), rgba(8, 15, 28, 0.25));
+    padding: 14px 18px;
+    font-family: var(--font-writing);
+    font-size: 16.5px;
+    font-style: italic;
+    line-height: 1.72;
+    color: var(--ink);
+  }
+
+  .cover-link-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(8, 15, 28, 0.58);
+    border: 1px solid color-mix(in srgb, var(--holo) 24%, transparent);
+  }
+
+  .cover-reel-anchor {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--holo-bright);
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    text-decoration: none;
+    border-bottom: 1px dashed color-mix(in srgb, var(--holo) 55%, transparent);
+    padding-bottom: 2px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .cover-reel-anchor:hover {
+    color: var(--rgb-g);
+    border-bottom-color: var(--rgb-g);
+  }
+
+  .cover-toc-box {
+    padding: 16px 20px;
+    background: linear-gradient(180deg, rgba(10, 18, 34, 0.55), rgba(3, 6, 12, 0.72));
+    border: 1px solid color-mix(in srgb, var(--holo) 22%, transparent);
+  }
+
+  .cover-toc-head {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--holo-bright);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid color-mix(in srgb, var(--holo) 16%, transparent);
+  }
+
+  .cover-toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cover-toc-ch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+  }
+  .cover-toc-ch:hover {
+    color: var(--rgb-g);
+    background: color-mix(in srgb, var(--holo) 8%, transparent);
+    transform: translateX(3px);
+  }
+
+  .cover-toc-sub {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    color: var(--dim);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    padding: 4px 8px 4px 24px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+  }
+  .cover-toc-sub:hover {
+    color: var(--holo-bright);
+    background: color-mix(in srgb, var(--holo) 6%, transparent);
+    transform: translateX(3px);
+  }
+
+  .cover-toc-wc {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--holo);
+    opacity: 0.8;
+  }
+
+
+  /* === INLINE MEDIA / VISUAL FRAMES === */
+  .holo-media-block {
+    position: relative;
+    display: block;
+    margin: 22px auto;
+    padding: 0;
+    width: 100%;
+    line-height: 0;
+    white-space: normal;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--holo) 34%, transparent);
+    background: #010205;
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.8),
+      -2px 0 12px color-mix(in srgb, var(--rgb-r) 24%, transparent),
+      2px 0 12px color-mix(in srgb, var(--rgb-g) 22%, transparent);
+    user-select: none;
+    transition: width 0.2s ease, border-color 0.2s ease;
+  }
+  .holo-media-block[data-size="md"] { width: 72%; }
+  .holo-media-block[data-size="sm"] { width: 48%; }
+
+  .holo-media-block:hover {
+    border-color: var(--holo-bright);
+  }
+
+  .holo-media-block img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+  }
+
+  .holo-media-caption {
+    display: block;
+    padding: 8px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--dim);
+    border-top: 1px solid color-mix(in srgb, var(--holo) 16%, transparent);
+    background: rgba(3, 6, 12, 0.92);
+    letter-spacing: 0.03em;
+  }
+  .holo-media-caption:empty {
+    display: none;
+  }
+
+  .holo-media-controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    opacity: 0;
+    transition: opacity 0.16s ease;
+    z-index: 5;
+  }
+  .holo-media-block:hover .holo-media-controls {
+    opacity: 1;
+  }
+
+  .media-ctrl-btn {
+    background: rgba(2, 4, 10, 0.88);
+    border: 1px solid color-mix(in srgb, var(--holo) 45%, transparent);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 7px;
+    border-radius: 3px;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+  .media-ctrl-btn:hover {
+    border-color: var(--rgb-g);
+    color: var(--rgb-g);
+  }
+  .media-ctrl-btn.is-danger:hover {
+    border-color: var(--rgb-r);
+    color: var(--rgb-r);
+  }
+
+  .writing-canvas.is-drag-over {
+    outline: 1.5px dashed var(--rgb-g);
+    outline-offset: 8px;
+    background: color-mix(in srgb, var(--rgb-g) 3%, transparent);
+  }
+
+  .cover-art-swap-btn {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: rgba(2, 4, 10, 0.82);
+    border: 1px solid color-mix(in srgb, var(--holo) 45%, transparent);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 4px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+    transition: all 0.15s ease;
+  }
+  .cover-art-swap-btn:hover {
+    border-color: var(--rgb-g);
+    color: var(--rgb-g);
+  }
+
+
+  .piece-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  .piece-card-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    background: rgba(6, 12, 24, 0.78);
+    border: 1px solid color-mix(in srgb, var(--holo) 24%, transparent);
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .piece-card-btn:hover {
+    border-color: var(--holo-bright);
+    background: rgba(14, 26, 48, 0.88);
+  }
+  .piece-card-btn.is-active-piece {
+    border-color: var(--rgb-g);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--rgb-g) 22%, transparent), inset 2px 0 0 var(--rgb-g);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--rgb-g) 12%, transparent), rgba(8, 16, 30, 0.88));
+  }
+  .piece-card-title {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .piece-card-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 3px;
+  }
+  .piece-card-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid color-mix(in srgb, var(--holo) 35%, transparent);
+    color: var(--holo-bright);
+    flex-shrink: 0;
+  }
+  .piece-card-btn.is-active-piece .piece-card-badge {
+    border-color: var(--rgb-g);
+    color: var(--rgb-g);
+  }
+
+  /* === a1.7 · LISTS (bullets and numbers) === */
+  .writing-canvas ul, .writing-canvas ol { margin: 0 0 0.92em 0; padding-left: 1.6em; }
+  .writing-canvas li { margin: 0.18em 0; padding-left: 0.2em; }
+  .writing-canvas li::marker { color: var(--holo); font-family: var(--font-mono); }
+  .full-essay-body ul, .full-essay-body ol { padding-left: 1.6em; margin: 0 0 0.9em; white-space: normal; }
+  .full-essay-body li::marker { color: var(--holo); }
+
+  /* === a1.7 · ARC AND CRESCENT LIGHT FOLLOW THE SKIN === */
+  #arcGradLeft stop:nth-child(1), #crescentGrad stop:nth-child(1) { stop-color: var(--holo); }
+  #arcGradLeft stop:nth-child(2), #crescentGrad stop:nth-child(2) { stop-color: var(--rgb-g); }
+  #arcGradLeft stop:nth-child(3), #crescentGrad stop:nth-child(3), #arcGradRight stop:nth-child(1) { stop-color: var(--rgb-r); }
+  #arcGradRight stop:nth-child(2) { stop-color: var(--holo); }
+  #arcGradRight stop:nth-child(3) { stop-color: var(--veil); }
+
+  /* === a1.7 · SKIN MATRIX: colour wells === */
+  .skin-swatch-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .holo-color { width: 100%; height: 34px; padding: 2px; background: rgba(3, 6, 12, 0.9);
+    border: 1px solid color-mix(in srgb, var(--holo) 28%, transparent); cursor: pointer; }
+
+  /* === a1.7 · PHONE (iPhone 16 Pro and other narrow screens) === */
+  .mobile-bar, .mobile-scrim, .mobile-tools { display: none; }
+  @media (max-width: 760px) {
+    .mobile-bar {
+      display: flex; align-items: center; gap: 10px;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+      height: calc(52px + env(safe-area-inset-top)); padding: env(safe-area-inset-top) 12px 0;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 96%, transparent), color-mix(in srgb, var(--bg) 82%, transparent));
+      border-bottom: 1px solid color-mix(in srgb, var(--holo) 20%, transparent);
+      backdrop-filter: blur(8px);
+    }
+    .mob-btn {
+      flex-shrink: 0; min-width: 44px; height: 36px; padding: 0 10px;
+      background: rgba(6, 11, 22, 0.7); color: var(--holo-bright);
+      border: 1px solid color-mix(in srgb, var(--holo) 35%, transparent); border-radius: 6px;
+      font-family: var(--font-mono); font-size: 12px; cursor: pointer;
+    }
+    body.nav-open #btnMobNav, body.tools-open #btnMobTools { border-color: var(--rgb-g); color: var(--rgb-g); }
+    .mob-title {
+      flex: 1; min-width: 0; text-align: center;
+      font-family: var(--font-display); font-size: 13px; font-weight: 700; color: var(--ink);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      text-shadow: -1px 0 var(--rgb-r), 1px 0 var(--rgb-b);
+    }
+    .mobile-scrim { position: fixed; inset: 0; z-index: 35; background: rgba(1, 2, 6, 0.6); }
+    body.nav-open .mobile-scrim, body.tools-open .mobile-scrim { display: block; }
+
+    /* the chamber tree slides in from the left */
+    .hud-top-left {
+      top: calc(52px + env(safe-area-inset-top)); left: 0; bottom: 0; width: min(84vw, 320px);
+      z-index: 38; padding: 16px 14px 24px; gap: 12px;
+      background: color-mix(in srgb, var(--bg) 96%, transparent);
+      border-right: 1px solid color-mix(in srgb, var(--holo) 28%, transparent);
+      box-shadow: 12px 0 30px rgba(0, 0, 0, 0.7);
+      transform: translateX(-105%); transition: transform 0.24s ease;
+    }
+    body.nav-open .hud-top-left { transform: translateX(0); }
+    .tether-list { max-height: none; flex: 1; }
+    .node-item { padding: 9px 10px; font-size: 13.5px; }
+    .sub-branch .node-item { font-size: 13px; padding: 8px 14px 8px 10px; }
+
+    /* the tools drop down from the top bar */
+    .mobile-tools {
+      position: fixed; top: calc(52px + env(safe-area-inset-top)); left: 0; right: 0; z-index: 38;
+      max-height: calc(100vh - 140px); overflow-y: auto; padding: 14px 14px 18px;
+      flex-direction: column; gap: 14px;
+      background: color-mix(in srgb, var(--bg) 96%, transparent);
+      border-bottom: 1px solid color-mix(in srgb, var(--holo) 28%, transparent);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.7);
+    }
+    body.tools-open .mobile-tools { display: flex; }
+    .mobile-tools .hud-top-right { position: static; width: 100%; align-items: stretch; }
+    .mobile-tools .rgb-pillars-wrap { display: none; }
+    .mobile-tools .hud-rig-group { align-items: flex-start; }
+    .mobile-tools .relay-row { justify-content: flex-start; }
+    .mobile-tools .relay-switch { padding: 8px 12px; font-size: 12px; }
+    .mobile-tools .crescent-dock { position: static; justify-content: flex-start; }
+    .mobile-tools .crescent-glyph { display: none; }
+    .mobile-tools .crescent-actions { flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .mobile-tools .holo-action-link { border-right: none; border-left: 2px solid color-mix(in srgb, var(--holo) 35%, transparent); padding: 6px 10px; text-align: left; }
+
+    /* the stage fills the screen between the bar and the dome */
+    .stage-viewport {
+      top: calc(56px + env(safe-area-inset-top)); left: 4px; right: 4px;
+      bottom: calc(96px + env(safe-area-inset-bottom));
+    }
+    .holo-reticle { width: 16px; height: 16px; }
+    .telemetry-strip { padding: 6px 10px; flex-wrap: wrap; gap: 6px; font-size: 10px; }
+    .stage-scroll { padding: 14px 14px 40px; }
+    .holo-art-strip { gap: 10px; padding: 6px 8px; }
+    .holo-art-thumb { width: 92px; height: 46px; }
+    .chamber-title-holo { font-size: 23px; }
+    .cover-main-title { font-size: 25px; }
+    .writing-canvas { font-size: 17px; line-height: 1.78; min-height: 260px; }
+    .stage-bottom-bar { padding: 6px 10px; font-size: 10px; gap: 8px; }
+    .stage-bottom-bar .holo-mini-btn { padding: 6px 10px; }
+    .holo-media-block[data-size="md"], .holo-media-block[data-size="sm"] { width: 100%; }
+
+    /* the dome: full width, lower, above the home bar */
+    .audio-dome-wrap {
+      width: 100%; height: calc(92px + env(safe-area-inset-bottom));
+      padding: 8px 12px calc(6px + env(safe-area-inset-bottom));
+      border-radius: 30px 30px 0 0;
+    }
+    .audio-dome-wrap::before { display: none; }
+    .dome-top-row { gap: 8px; }
+    .dome-scrubber { width: 78vw; }
+    .dome-live-lyric { max-width: 90vw; }
+    /* typing: the dome steps aside so the keyboard and the text get the room */
+    body.is-typing .audio-dome-wrap { opacity: 0; pointer-events: none; }
+    body.is-typing .stage-viewport { bottom: 6px; }
+
+    .holo-drawer { width: 94vw; bottom: calc(100px + env(safe-area-inset-bottom)); max-height: 52vh; }
+    .holo-modal { padding: 18px 16px; max-height: 88vh; overflow-y: auto; }
+    body.focus-mode .mobile-bar { display: none; }
+    body.focus-mode .stage-viewport { left: 2%; right: 2%; top: calc(8px + env(safe-area-inset-top)); bottom: 8px; }
+    .floating-exit-focus { top: calc(10px + env(safe-area-inset-top)); right: 10px; }
+  }
+
+  /* === a1.8 · EDITABLE TITLES === */
+  [contenteditable="plaintext-only"] { outline: none; cursor: text; border-radius: 3px; transition: box-shadow 0.15s ease; }
+  [contenteditable="plaintext-only"]:hover { box-shadow: 0 0 0 1px color-mix(in srgb, var(--holo) 30%, transparent); }
+  [contenteditable="plaintext-only"]:focus { box-shadow: 0 0 0 1px var(--rgb-g); }
+
+  /* === a1.8 · EDIT MAP (topics and subtopics) === */
+  .holo-mini-btn.is-on { border-color: var(--rgb-g); color: var(--rgb-g); }
+  .node-row { display: flex; align-items: center; gap: 4px; }
+  .node-row > .node-item { flex: 1; min-width: 0; }
+  .node-tools { display: flex; gap: 2px; flex-shrink: 0; }
+  .node-tool {
+    width: 20px; height: 20px; padding: 0; line-height: 1;
+    background: transparent; color: var(--holo); cursor: pointer; border-radius: 3px;
+    border: 1px solid color-mix(in srgb, var(--holo) 25%, transparent);
+    font-family: var(--font-mono); font-size: 10px;
+  }
+  .node-tool:hover { border-color: var(--rgb-g); color: var(--rgb-g); }
+  .node-tool.is-danger:hover { border-color: var(--rgb-r); color: var(--rgb-r); }
+  .map-add-topic { margin-top: 10px; align-self: flex-start; }
+
+  /* === a1.8 · PIECE ROWS (delete) === */
+  .piece-row { display: flex; gap: 6px; align-items: stretch; }
+  .piece-row .piece-card-btn { flex: 1; min-width: 0; }
+  .piece-del:hover { border-color: var(--rgb-r); color: var(--rgb-r); }
+
+  @media (max-width: 760px) {
+    /* the names keep their full width; the tools sit on their own line under each name */
+    .node-row { flex-wrap: wrap; gap: 0; }
+    .node-row > .node-item { flex-basis: 100%; }
+    .hud-top-left .node-label { white-space: normal; overflow: visible; }
+    .node-tools { gap: 6px; margin: 0 0 8px 26px; }
+    .node-tool { width: 36px; height: 30px; font-size: 13px; }
+  }
+</style>
+</head>
+<body data-chapter-mood="intro">
+  <div class="holo-grid-stage">
+    <div class="holo-grid-floor"></div>
+  </div>
+  <canvas id="spatialCanvas"></canvas>
+  <div class="holo-scanlines"></div>
+  <div class="guardian-shroud"></div>
+
+  <svg class="orbital-svg" viewBox="0 0 1920 1080" preserveAspectRatio="none" aria-hidden="true">
+    <defs>
+      <linearGradient id="arcGradLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#8fd6ff" stop-opacity="0.55"/>
+        <stop offset="55%" stop-color="#5affb8" stop-opacity="0.32"/>
+        <stop offset="100%" stop-color="#ff3d66" stop-opacity="0.08"/>
+      </linearGradient>
+      <linearGradient id="arcGradRight" x1="100%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#ff3d66" stop-opacity="0.5"/>
+        <stop offset="50%" stop-color="#8fd6ff" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#a58bff" stop-opacity="0.08"/>
+      </linearGradient>
+    </defs>
+    <path d="M 0 145 Q 250 135 440 0" fill="none" stroke="url(#arcGradLeft)" stroke-width="1.4"/>
+    <path d="M 0 640 Q 210 470 295 215" fill="none" stroke="url(#arcGradLeft)" stroke-width="1.2"/>
+    <circle cx="295" cy="215" r="3.5" fill="#f4f9fd"/>
+    <path d="M 1520 0 Q 1680 140 1920 165" fill="none" stroke="url(#arcGradRight)" stroke-width="1.4"/>
+    <path d="M 1645 220 Q 1730 430 1920 560" fill="none" stroke="url(#arcGradRight)" stroke-width="1.1"/>
+    <circle cx="1645" cy="220" r="3" fill="#8fd6ff"/>
+  </svg>
+
+  <header class="mobile-bar" aria-label="Phone bar">
+    <button id="btnMobNav" class="mob-btn" title="Chambers">&#9776;</button>
+    <div class="mob-title" id="mobTitle">The Push&amp;Pull</div>
+    <button id="btnMobTools" class="mob-btn" title="Tools">Tools</button>
+  </header>
+  <div class="mobile-scrim" id="mobScrim"></div>
+  <div class="mobile-tools" id="mobileTools"></div>
+
+  <button id="btnExitFocus" class="relay-switch is-latched floating-exit-focus">Exit Focus [Esc]</button>
+
+  <aside class="hud-top-left">
+    <div class="brand-row">
+      <div class="mark-emitter" title="Nate's Runic Mark">
+        <svg width="28" height="28" viewBox="0 0 120 120" aria-hidden="true">
+          <defs>
+            <linearGradient id="prismGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#4a8cff"/>
+              <stop offset="30%" stop-color="#9b5cff"/>
+              <stop offset="60%" stop-color="#d67ac8"/>
+              <stop offset="82%" stop-color="#ffaa46"/>
+              <stop offset="100%" stop-color="#ffd64a"/>
+            </linearGradient>
+          </defs>
+          <path d="M72 14V98 M72 46L55 64L72 82 M72 59L86 48L99 59V98"
+                fill="none" stroke="url(#prismGrad)" stroke-width="9"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M72 14V98 M72 46L55 64L72 82 M72 59L86 48L99 59V98"
+                fill="none" stroke="#f4f9fd" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+        </svg>
+      </div>
+      <div class="brand-title-col">
+        <div class="brand-title" id="headerDocTitle">The Push&amp;Pull, Glitches...</div>
+        <div class="brand-sub" id="railTotalWords">VAULT HELD · 0 WORDS</div>
+      </div>
+    </div>
+
+    <div class="tether-header-row">
+      <span class="hud-micro-label">Last Tether</span>
+      <div style="display:flex; gap:5px;">
+        <button id="btnEditMap" class="holo-mini-btn" title="Rename, add, move or delete topics">Edit</button>
+        <button id="btnSwitchPiece" class="holo-mini-btn" title="Switch or create piece">Piece</button>
+        <button id="btnNewDoc" class="holo-mini-btn" title="Start a new piece">+ New</button>
+      </div>
+    </div>
+
+    <nav id="chapterTree" class="tether-list"></nav>
+  </aside>
+
+  <aside class="hud-top-right">
+    <div class="rgb-pillars-wrap" title="RGB Triple-Shield Frequency">
+      <div class="rgb-pillar p-r"><div class="rgb-pillar-fill" id="pillarR"></div></div>
+      <div class="rgb-pillar p-g"><div class="rgb-pillar-fill" id="pillarG"></div></div>
+      <div class="rgb-pillar p-b"><div class="rgb-pillar-fill" id="pillarB"></div></div>
+      <div class="rgb-pillar p-v"><div class="rgb-pillar-fill" id="pillarV"></div></div>
+    </div>
+
+    <div class="hud-rig-group">
+      <span class="hud-micro-label">Armed Style &amp; Type</span>
+      <div class="relay-row">
+        <button id="btnUndo" class="relay-switch" title="Undo (Ctrl+Z)">&#8630; Undo</button>
+        <button id="btnRedo" class="relay-switch" title="Redo (Ctrl+Y)">&#8631; Redo</button>
+        <button id="btnBold" class="relay-switch" title="Toggle Bold (stays latched ON)">
+          <span class="relay-led"></span><b>B</b>
+        </button>
+        <button id="btnItalic" class="relay-switch" title="Toggle Italic (stays latched ON)">
+          <span class="relay-led"></span><i>I</i>
+        </button>
+        <button id="btnQuote" class="relay-switch" title="Toggle Blockquote (latched ON/OFF)"><span class="relay-led"></span>&ldquo;Q&rdquo;</button>
+        <button id="btnBullets" class="relay-switch" title="Bulleted list"><span class="relay-led"></span>&bull; List</button>
+        <button id="btnNumbers" class="relay-switch" title="Numbered list"><span class="relay-led"></span>1. List</button>
+        <button id="btnCue" class="relay-switch" title="Insert 22hrs Timestamp Cue (Ctrl+Shift+K)">+Cue</button>
+        <button id="btnAddMedia" class="relay-switch" title="Insert Image / Visual Media (+Pic)">+Pic</button>
+      </div>
+
+      <div class="relay-row">
+        <button class="relay-switch font-pill is-latched" data-font="serif"><span class="relay-led"></span>SERIF</button>
+        <button class="relay-switch font-pill" data-font="sans"><span class="relay-led"></span>SANS</button>
+        <button class="relay-switch font-pill" data-font="mono"><span class="relay-led"></span>MONO</button>
+      </div>
+
+      <span class="hud-micro-label" style="margin-top:4px;">Craft &amp; Hologram</span>
+      <div class="relay-row">
+        <button id="btnTypewriter" class="relay-switch" title="Dim inactive paragraphs"><span class="relay-led"></span>Flow</button>
+        <button id="btnEchoCheck" class="relay-switch" title="Highlight repeated words"><span class="relay-led"></span>Echoes</button>
+        <button id="btnGlitchPulse" class="relay-switch" title="Trigger RGB slice glitch">Glitch</button>
+      </div>
+
+      <div class="relay-row">
+        <button id="btnToggleArt" class="relay-switch is-latched" title="Toggle 22hrs Visualizer Strip"><span class="relay-led"></span>22hrs Art</button>
+        <button id="btnOpenSkin" class="relay-switch" title="Skins & Hologram Presets">Skins</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="stage-viewport">
+    <div class="holo-reticle tl"></div>
+    <div class="holo-reticle tr"></div>
+    <div class="holo-reticle bl"></div>
+    <div class="holo-reticle br"></div>
+
+    <div class="telemetry-strip">
+      <div class="armed-badges">
+        <span style="color:var(--dim-muted);">ARMED:</span>
+        <span class="armed-pill" id="badgeFont">SERIF</span>
+        <span class="armed-pill" id="badgeBold" style="display:none;">BOLD ON</span>
+        <span class="armed-pill" id="badgeItalic" style="display:none;">ITALIC ON</span>
+        <span class="armed-pill" id="badgeQuote" style="display:none;">QUOTE ON</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button id="btnModeSingle" class="holo-mini-btn" style="border-color:var(--rgb-g); color:var(--ink);">Chamber</button>
+        <button id="btnModeFull" class="holo-mini-btn">Full Essay</button>
+      </div>
+    </div>
+
+    <div class="stage-scroll" id="editorScroll">
+      <div class="stage-column">
+        <div class="holo-art-strip" id="visualAnchorCard">
+          <img id="visualAnchorImg" class="holo-art-thumb" alt="KAIA - 22hrs Visualizer" />
+          <div>
+            <div class="holo-art-title">KAIA - 22hrs (Fan-made Visualizer)</div>
+            <div class="holo-art-sub" id="artStripSub">pivotal track and the inspiration for the essay</div>
+          </div>
+        </div>
+
+        <div id="coverChamberView" class="cover-chamber">
+          <div class="cover-hero-frame">
+            <img id="coverHeroImg" class="cover-hero-img" alt="KAIA - 22hrs Fan-made Visualizer" />
+            <button id="btnSwapCoverArt" class="cover-art-swap-btn" title="Upload custom cover image">Change Cover Art</button>
+            <a id="coverIgBadge" class="cover-ig-badge" href="https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==" target="_blank" rel="noopener noreferrer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+              <span>@IZ.NENAD.AN</span>
+            </a>
+          </div>
+
+          <div class="cover-title-block">
+            <div class="cover-kicker">COVER &amp; TITLE &middot; INTRODUCTORY CHAMBER</div>
+            <h1 class="cover-main-title" id="coverMainTitle" contenteditable="plaintext-only" spellcheck="false" title="Click to rename the piece">The Push&amp;Pull, Glitches, and the Shrouded Guardian</h1>
+            <div class="cover-byline" id="coverByline">Authored by: Nate</div>
+          </div>
+
+          <blockquote class="cover-opening-quote" id="coverOpeningQuote" contenteditable="plaintext-only" title="Click to edit">
+            An introspective personal essay, combined with an audio review as a showcase of core pillars upon which the artist works and how this essay is built.
+          </blockquote>
+
+          <div class="cover-link-bar">
+            <a id="coverReelLink" class="cover-reel-anchor" href="https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==" target="_blank" rel="noopener noreferrer">
+              <span>&#9654; KAIA - 22hrs (Fan-made Visualizer) &middot; Watch Reel (@IZ.NENAD.AN) &#8599;</span>
+            </a>
+            <button id="btnEditReelUrl" class="holo-mini-btn" title="Edit visualizer Reel URL">Edit Link</button>
+          </div>
+
+          <div class="cover-toc-box">
+            <div class="cover-toc-head">Table of Contents</div>
+            <div id="coverTocList" class="cover-toc-list"></div>
+          </div>
+        </div>
+
+        <div id="singleChamberView">
+          <div class="crumb-line" id="chamberCrumb">1. INTRODUCTION</div>
+          <h1 class="chamber-title-holo" id="chamberHeading" contenteditable="plaintext-only" spellcheck="false" title="Click to rename">Introduction</h1>
+
+          <div class="echo-whisper" id="echoBar"></div>
+
+          <div id="writingSurface"
+               class="writing-canvas"
+               contenteditable="true"
+               spellcheck="true"
+               data-placeholder="Project your words into the chamber... Everything saves automatically in your local vault."></div>
+        </div>
+
+        <div id="fullEssayView" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="stage-bottom-bar">
+      <div id="wordStats">Chamber: 0w &middot; Total: 0w &middot; Ready</div>
+      <div style="display:flex; gap:8px;">
+        <button id="btnPrevChamber" class="holo-mini-btn">&larr; Prev</button>
+        <button id="btnNextChamber" class="holo-mini-btn">Next &rarr;</button>
+      </div>
+    </div>
+  </main>
+
+  <section class="audio-dome-wrap" aria-label="KAIA - 22hrs Audio Dome">
+    <div class="dome-top-row">
+      <label class="holo-mini-btn" style="cursor:pointer;" title="Load 22hrs MP3">
+        Load MP3
+        <input id="audioFileInput" type="file" accept="audio/*" style="display:none;" />
+      </label>
+      <button id="btnDomePlay" class="plasma-play-btn" title="Play / Pause">&#9654;</button>
+      <div class="dome-track-meta">
+        <div class="dome-track-name" id="domeTrackLabel">KAIA - 22hrs</div>
+        <div class="dome-timecode" id="domeTimecode">0:00 / 2:45</div>
+      </div>
+      <button id="btnToggleLyrics" class="holo-mini-btn" title="Expand full 22hrs lyric sheet">Lyrics &#9652;</button>
+    </div>
+
+    <input id="domeScrubber" class="dome-scrubber" type="range" min="0" max="165" value="0" step="0.1" />
+
+    <div id="domeLiveLyric" class="dome-live-lyric" title="Click to stamp this lyric cue into your draft">
+      [0:23] &ldquo;22 hours and i'm fading from view&rdquo;
+    </div>
+
+    <audio id="trackPlayer" preload="metadata" style="display:none;"></audio>
+  </section>
+
+  <aside class="crescent-dock">
+    <div class="crescent-actions">
+      <button id="btnFocusMode" class="holo-action-link">Focus [Esc]</button>
+      <button id="btnOpenUnsaid" class="holo-action-link">Unsaid Pocket (<span id="unsaidCount">0</span>)</button>
+      <button id="btnOpenExport" class="holo-action-link">Export / Vault</button>
+    </div>
+    <svg class="crescent-glyph" viewBox="0 0 80 110" aria-hidden="true">
+      <defs>
+        <linearGradient id="crescentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#8fd6ff" stop-opacity="0.95"/>
+          <stop offset="55%" stop-color="#5affb8" stop-opacity="0.75"/>
+          <stop offset="100%" stop-color="#ff3d66" stop-opacity="0.55"/>
+        </linearGradient>
+      </defs>
+      <path d="M 62 12 A 44 44 0 1 0 62 98 A 33 36 0 1 1 62 12 Z"
+            fill="rgba(143, 214, 255, 0.1)"
+            stroke="url(#crescentGrad)"
+            stroke-width="2"/>
+    </svg>
+  </aside>
+
+  <div id="lyricsDrawer" class="holo-drawer">
+    <div class="holo-drawer-head">
+      <span>KAIA - 22hrs &middot; Click any line to stamp cue</span>
+      <button id="btnCloseLyrics" class="holo-mini-btn">Close</button>
+    </div>
+    <div id="lyricsContainer" class="holo-drawer-list"></div>
+  </div>
+
+  <div id="unsaidModal" class="modal-backdrop">
+    <div class="holo-modal">
+      <div class="modal-title">Unsaid &amp; Stray Fragments</div>
+      <div class="modal-sub" id="unsaidModalSub">
+        Park raw lines, alternate phrasings, or fragments left unsaid for this chamber. Saved automatically per chamber.
+      </div>
+      <div class="field-row">
+        <textarea id="unsaidTextarea" class="holo-textarea" style="min-height:170px;" placeholder="Park stray lines here..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button id="btnCloseUnsaid" class="relay-switch is-latched">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="switchPieceModal" class="modal-backdrop">
+    <div class="holo-modal">
+      <div class="modal-title">Switch Vault Piece</div>
+      <div class="modal-sub">Select any saved piece in your local vault to open its chambers and cover sheet.</div>
+      <div id="pieceListContainer" class="piece-list"></div>
+      <div class="modal-actions">
+        <button id="btnOpenNewFromSwitch" class="holo-mini-btn" style="margin-right:auto;">+ Spin Up New Piece</button>
+        <button id="btnCloseSwitchModal" class="relay-switch is-latched">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="newPieceModal" class="modal-backdrop">
+    <div class="holo-modal">
+      <div class="modal-title">Create New Piece</div>
+      <div class="modal-sub">Spin up a fresh multi-chamber piece with its own Cover &amp; Title sheet.</div>
+      <div class="field-row">
+        <label>Piece Title</label>
+        <input id="newDocTitle" class="holo-input" placeholder="e.g., Acute Curvature / Downpour of Last Hope" />
+      </div>
+      <div class="field-row">
+        <label>Subtitle / Opening Note</label>
+        <input id="newDocSub" class="holo-input" placeholder="e.g., Personal Essay &amp; Structural Notes" />
+      </div>
+      <div class="field-row">
+        <label>Chambers (one per line)</label>
+        <textarea id="newDocChapters" class="holo-textarea" style="min-height:92px;">Opening
+Core
+Closing</textarea>
+      </div>
+      <div class="modal-actions">
+        <button id="btnCloseNewPieceModal" class="relay-switch">Cancel</button>
+        <button id="btnConfirmNewDoc" class="relay-switch is-latched">Create &amp; Open</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="skinModal" class="modal-backdrop">
+    <div class="holo-modal">
+      <div class="modal-title">Hologram Skin Matrix</div>
+      <div class="modal-sub">Switch visual frequency or register a custom token pack.</div>
+      <div class="field-row">
+        <label>Select Active Skin</label>
+        <select id="skinSelector" class="holo-select"></select>
+      </div>
+      <div class="field-row">
+        <label>Custom Skin Name</label>
+        <input id="newSkinName" class="holo-input" placeholder="e.g., Ay-Vee Phosphor / Shrouded Violet" />
+      </div>
+      <div class="skin-swatch-row">
+        <div class="field-row">
+          <label>Void</label>
+          <input id="newSkinBg" class="holo-color" type="color" value="#020307" />
+        </div>
+        <div class="field-row">
+          <label>Holo Beam</label>
+          <input id="newSkinAccent" class="holo-color" type="color" value="#8fd6ff" />
+        </div>
+        <div class="field-row">
+          <label>Core Pulse</label>
+          <input id="newSkinLamp" class="holo-color" type="color" value="#5affb8" />
+        </div>
+      </div>
+      <div class="modal-sub" style="margin:2px 0 0;">Picking a skin above applies it at once. The wells start from the active skin; change them and Save to make your own.</div>
+      <div class="modal-actions">
+        <button id="btnDeleteSkin" class="relay-switch" style="margin-right:auto; display:none;">Delete this skin</button>
+        <button id="btnCancelSkin" class="relay-switch">Close</button>
+        <button id="btnSaveSkin" class="relay-switch is-latched">Save &amp; Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="exportModal" class="modal-backdrop">
+    <div class="holo-modal">
+      <div class="modal-title">Export Active Piece</div>
+      <div class="modal-sub">Export the piece as a Holographic PDF, a standalone HTML page or Markdown. To move your writing between phone and PC: Send Vault on one, Import Vault on the other.</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <button id="btnExpPdf" class="relay-switch is-latched" style="justify-content:center;">Export Holographic PDF (.pdf)</button>
+        <button id="btnExpHtml" class="relay-switch" style="justify-content:center;">Export Standalone Holographic HTML (.html)</button>
+        <button id="btnExpMd" class="relay-switch" style="justify-content:center;">Export Markdown (.md)</button>
+        <button id="btnExpJson" class="relay-switch" style="justify-content:center;">Send / Save Vault (.json)</button>
+        <label class="relay-switch" style="justify-content:center; cursor:pointer;">Import Vault (.json)<input id="importVaultInput" type="file" accept=".json,application/json" style="display:none;" /></label>
+        <button id="btnUndoImport" class="relay-switch" style="justify-content:center; display:none;">Undo Last Import</button>
+      </div>
+      <div class="modal-actions">
+        <button id="btnCloseExport" class="relay-switch">Close</button>
+      </div>
+    </div>
+  </div>
+
+    <div id="mediaModal" class="modal-backdrop">
+    <div class="holo-modal">
+      <div class="modal-title">Insert Visual Media</div>
+      <div class="modal-sub">Upload an image from your device (or paste/drag directly into any chamber). Saved locally in your vault and included in Full Essay &amp; Holographic PDF exports.</div>
+      <div class="field-row">
+        <label>Choose Image File (PNG, JPG, WEBP, GIF)</label>
+        <input id="mediaFileInput" type="file" accept="image/*" class="holo-input" />
+      </div>
+      <div class="field-row">
+        <label>Or Paste Image URL / Data URI</label>
+        <input id="mediaUrlInput" class="holo-input" placeholder="https://... or leave blank if uploading file" />
+      </div>
+      <div class="field-row">
+        <label>Saved Caption Presets (pick base &amp; append Sequence / Frame)</label>
+        <div style="display:flex; gap:6px;">
+          <select id="mediaPresetSelect" class="holo-select" style="flex:1; min-width:0;"></select>
+          <button type="button" id="btnSaveCaptionPreset" class="holo-mini-btn" title="Save current caption text as a reusable preset">+ Save</button>
+          <button type="button" id="btnDelCaptionPreset" class="holo-mini-btn" title="Remove selected preset">&times;</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <label>Caption (optional)</label>
+        <input id="mediaCaptionInput" class="holo-input" placeholder="e.g., 22hrs Fan-Made Visualizer - Sequence - The Blinding" />
+      </div>
+      <div class="field-row">
+        <label>Display Width</label>
+        <select id="mediaSizeInput" class="holo-select">
+          <option value="full">Full Chamber Width (100%)</option>
+          <option value="md">Medium Frame (72%)</option>
+          <option value="sm">Compact Frame (48%)</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button id="btnCancelMedia" class="relay-switch">Cancel</button>
+        <button id="btnInsertMedia" class="relay-switch is-latched">Insert into Chamber</button>
+      </div>
+    </div>
+  </div>
+
+  <input id="coverArtFileInput" type="file" accept="image/*" style="display:none;" />
+
+  <div id="whisperToast" class="whisper-toast"></div>
+
+  <script>
+    const DB = {"meta": {"project": "Custom Writing Studio", "version": "a1.8", "essayTitle": "The Push&Pull, Glitches, and the Shrouded Guardian", "author": "Nate", "handle": "@IZ.NENAD.AN", "reelUrl": "https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==", "essaySubtitle": "An introspective personal essay, combined with an audio review as a showcase of core pillars upon which the artist works and how this essay is built.", "visualizerCaption": "KAIA - 22hrs (Fan-made Visualizer); pivotal track and the inspiration for the essay", "visualizerArt": "data:image/jpeg;base64,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"}, "chapters": [{"id": "cover", "num": "0", "title": "Cover & Title", "subs": [{"id": "cover-main", "title": "Cover & Title", "isRoot": true, "isCover": true}]}, {"id": "intro", "num": "1", "title": "Introduction", "subs": [{"id": "intro-main", "title": "Introduction", "isRoot": true}]}, {"id": "felt", "num": "2", "title": "The Felt", "subs": [{"id": "felt-exposure", "title": "Exposure"}, {"id": "felt-intermission", "title": "Intermission"}, {"id": "felt-pulse", "title": "Pulse&BloodFlow"}]}, {"id": "pushpull", "num": "3", "title": "Push&Pull", "subs": [{"id": "pushpull-gamble", "title": "A Gamble"}, {"id": "pushpull-tether", "title": "Last Tether"}]}, {"id": "glitches", "num": "4", "title": "Glitches", "subs": [{"id": "glitches-trope", "title": "Cheap Trope vs. Distortion Masking"}, {"id": "glitches-visage", "title": "MultiFaced Visage"}, {"id": "glitches-trail", "title": "Unwoven Trail"}]}, {"id": "guardian", "num": "5", "title": "Shrouded Guardian", "subs": [{"id": "guardian-hei", "title": "He&I"}, {"id": "guardian-fidgets", "title": "The Clutch of Fidgets"}, {"id": "guardian-promise", "title": "Unfulfilled Promise"}, {"id": "guardian-hword", "title": "The H- Word"}]}, {"id": "sharplight", "num": "6", "title": "Sharp Light&Defined Edges", "subs": [{"id": "sharplight-main", "title": "Sharp Light&Defined Edges", "isRoot": true}]}, {"id": "unsaid", "num": "7", "title": "All Things Left Unsaid", "subs": [{"id": "unsaid-main", "title": "All Things Left Unsaid", "isRoot": true}]}, {"id": "closing", "num": "8", "title": "Closing Wordsmith", "subs": [{"id": "closing-main", "title": "Closing Wordsmith", "isRoot": true}]}], "lyrics": [{"t": "0:15", "line": "i been waitin' on you"}, {"t": "0:19", "line": "stuck in rain showers, i been prayin' for june"}, {"t": "0:23", "line": "22 hours and i'm fading from view"}, {"t": "0:27", "line": "but i just wanna know about you"}, {"t": "0:31", "line": "just wanna know about you"}, {"t": "0:34", "line": "where ya been, boy?"}, {"t": "0:36", "line": "i was dancing on the ice, gettin' thin, boy"}, {"t": "0:40", "line": "and yeah, you got that thing, boy"}, {"t": "0:43", "line": "put your hands on me and it's the medicine, boy"}, {"t": "0:46", "line": "'cause 22 years got me feelin' like a lifetime"}, {"t": "0:50", "line": "22 years, maybe you could be the lifeline"}, {"t": "0:54", "line": "whatcha think, boy?"}, {"t": "0:56", "line": "can you handle all the baggage, or ya sink, boy?"}, {"t": "1:00", "line": "i been waitin' on you"}, {"t": "1:04", "line": "stuck in rain showers, i been prayin' for june"}, {"t": "1:08", "line": "22 hours and i'm fading from view"}, {"t": "1:12", "line": "but i just wanna know about you"}, {"t": "1:16", "line": "just wanna know about you"}, {"t": "1:20", "line": "so don't let me fade away now"}, {"t": "1:24", "line": "just keep your eyes on me"}, {"t": "1:28", "line": "don't be another letdown"}, {"t": "1:32", "line": "oh baby, don't you see"}, {"t": "1:36", "line": "22 years got me feelin' like a lifetime"}, {"t": "1:40", "line": "22 years, maybe you could be the lifeline"}, {"t": "1:44", "line": "don't let me fade away now"}, {"t": "1:48", "line": "you don't know what i've seen"}, {"t": "1:54", "line": "what i've seen"}, {"t": "2:00", "line": "will you come for me?"}, {"t": "2:08", "line": "and you won't come for me"}, {"t": "2:16", "line": "and you won't come for me"}, {"t": "2:23", "line": "i been waitin' on you"}, {"t": "2:27", "line": "stuck in rain showers, i been prayin' for june"}, {"t": "2:31", "line": "22 hours and i'm fading from view"}, {"t": "2:35", "line": "but i just wanna know about you"}, {"t": "2:39", "line": "just wanna know about you"}]};
+
+    const STORAGE_KEY = "nate_writing_studio_vault_v1";
+    const SKINS_STORAGE_KEY = "nate_writing_studio_skins_v1";
+
+    const DEFAULT_SKINS = {
+      "rgb-triple-holo": {
+        id: "rgb-triple-holo",
+        name: "RGB Triple-Shield Hologram (Default)",
+        tokens: {
+          "--bg": "#020307",
+          "--holo": "#8fd6ff",
+          "--holo-bright": "#d4f0ff",
+          "--rgb-r": "#ff3d66",
+          "--rgb-g": "#5affb8",
+          "--rgb-b": "#5ca8ff",
+          "--amber": "#f2b25c",
+          "--veil": "#a58bff"
+        }
+      },
+      "ayvee-phosphor": {
+        id: "ayvee-phosphor",
+        name: "Ay-Vee Utopia Phosphor",
+        tokens: {
+          "--bg": "#020403",
+          "--holo": "#7dffb3",
+          "--holo-bright": "#d6ffe7",
+          "--rgb-r": "#ff4f79",
+          "--rgb-g": "#b6ff3c",
+          "--rgb-b": "#6ec8ff",
+          "--amber": "#ffd25a",
+          "--veil": "#b28aff"
+        }
+      },
+      "shrouded-violet": {
+        id: "shrouded-violet",
+        name: "Shrouded Guardian Void",
+        tokens: {
+          "--bg": "#030208",
+          "--holo": "#b6a4ff",
+          "--holo-bright": "#e6deff",
+          "--rgb-r": "#ff3d66",
+          "--rgb-g": "#7af5d0",
+          "--rgb-b": "#6ea8ff",
+          "--amber": "#f2b25c",
+          "--veil": "#9d7aff"
+        }
+      }
+    };
+
+    let registeredSkins = { ...DEFAULT_SKINS };
+
+    function whisper(msg) {
+      const el = document.getElementById("whisperToast");
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.add("is-shown");
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => el.classList.remove("is-shown"), 2200);
+    }
+
+    function loadCustomSkins() {
+      try {
+        const raw = localStorage.getItem(SKINS_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          Object.keys(parsed).forEach((k) => {
+            if (!DEFAULT_SKINS[k]) registeredSkins[k] = parsed[k];
+          });
+        }
+      } catch (e) {}
+    }
+
+    function registerSkin(skinDef) {
+      if (!skinDef || !skinDef.id || !skinDef.tokens) return;
+      registeredSkins[skinDef.id] = skinDef;
+      const customOnly = {};
+      Object.keys(registeredSkins).forEach((k) => {
+        if (!DEFAULT_SKINS[k]) customOnly[k] = registeredSkins[k];
+      });
+      localStorage.setItem(SKINS_STORAGE_KEY, JSON.stringify(customOnly));
+      renderSkinSelector();
+      applySkin(skinDef.id);
+    }
+
+    function applySkin(skinId) {
+      const skin = registeredSkins[skinId] || registeredSkins["rgb-triple-holo"];
+      const root = document.documentElement;
+      root.setAttribute("data-skin", skin.id);
+      Object.entries(skin.tokens).forEach(([prop, val]) => {
+        root.style.setProperty(prop, val);
+      });
+      vault.activeSkin = skin.id;
+      saveVault();
+      const sel = document.getElementById("skinSelector");
+      if (sel) sel.value = skin.id;
+      fillSkinWells(skin);
+      recolourSparks();
+      const del = document.getElementById("btnDeleteSkin");
+      if (del) del.style.display = DEFAULT_SKINS[skin.id] ? "none" : "inline-flex";
+    }
+
+    /* a1.7: the colour wells start from the active skin, so Save makes a real variation */
+    function fillSkinWells(skin) {
+      const t = skin.tokens || {};
+      const put = (id, v) => { const el = document.getElementById(id); if (el && /^#[0-9a-f]{6}$/i.test(v || "")) el.value = v; };
+      put("newSkinBg", t["--bg"]);
+      put("newSkinAccent", t["--holo"]);
+      put("newSkinLamp", t["--rgb-g"]);
+    }
+
+    /* a1.7: the drifting sparks take the skin's colours */
+    function skinSparkColours() {
+      const cs = getComputedStyle(document.documentElement);
+      return ["--rgb-r", "--rgb-g", "--rgb-b", "--holo", "--amber"].map((v) => cs.getPropertyValue(v).trim() || "#8fd6ff");
+    }
+    function recolourSparks() {
+      if (typeof sparks === "undefined") return;
+      const colours = skinSparkColours();
+      sparks.forEach((sp, i) => { sp.color = colours[i % colours.length]; });
+    }
+
+    function renderSkinSelector() {
+      const sel = document.getElementById("skinSelector");
+      sel.innerHTML = "";
+      Object.values(registeredSkins).forEach((skin) => {
+        const opt = document.createElement("option");
+        opt.value = skin.id;
+        opt.textContent = skin.name;
+        sel.appendChild(opt);
+      });
+      sel.value = vault.activeSkin || "rgb-triple-holo";
+    }
+
+    /* a1.7: blend two hex colours (used for the bright beam of a custom skin) */
+    function mixHex(a, b, t) {
+      const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+      const ch = (p, sh) => (p >> sh) & 255;
+      const out = [16, 8, 0].map((sh) => Math.round(ch(pa, sh) * (1 - t) + ch(pb, sh) * t));
+      return "#" + out.map((v) => v.toString(16).padStart(2, "0")).join("");
+    }
+
+    function buildInitialEssayDoc() {
+      const sections = {};
+      DB.chapters.forEach((ch) => {
+        ch.subs.forEach((s) => { sections[s.id] = ""; });
+      });
+      return {
+        id: "essay-22hrs",
+        title: DB.meta.essayTitle,
+        author: DB.meta.author || "Nate",
+        handle: DB.meta.handle || "@IZ.NENAD.AN",
+        reelUrl: DB.meta.reelUrl || "https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==",
+        subtitle: DB.meta.essaySubtitle,
+        chapters: JSON.parse(JSON.stringify(DB.chapters)),
+        sections,
+        scratchpads: {}
+      };
+    }
+
+    const DEFAULT_CAPTION_PRESETS = [
+      "22hrs Fan-Made Visualizer - Sequence - ",
+      "22hrs Fan-Made Visualizer - Frame ",
+      "22hrs Fan-Made Visualizer - Sequence - The Blinding",
+      "RGB Triple-Shield & Frequency Split - "
+    ];
+
+    let vault = {
+      activeDocId: "essay-22hrs",
+      activeSectionId: "cover-main",
+      activeSkin: "rgb-triple-holo",
+      bodyFont: "serif",
+      typewriterMode: false,
+      echoCheck: false,
+      showVisualAnchor: true,
+      viewMode: "single",
+      captionPresets: [...DEFAULT_CAPTION_PRESETS],
+      docs: {
+        "essay-22hrs": buildInitialEssayDoc()
+      }
+    };
+
+    const armedFormat = {
+      bold: false,
+      italic: false,
+      quote: false
+    };
+
+    function loadVault() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.docs && Object.keys(parsed.docs).length) {
+            vault = { ...vault, ...parsed };
+            if (!registeredSkins[vault.activeSkin]) vault.activeSkin = "rgb-triple-holo";
+            if (!Array.isArray(vault.captionPresets) || !vault.captionPresets.length) {
+              vault.captionPresets = [...DEFAULT_CAPTION_PRESETS];
+            }
+            Object.values(vault.docs).forEach((d) => {
+              if (!d.scratchpads) d.scratchpads = {};
+              if (!d.author) d.author = DB.meta.author || "Nate";
+              if (!d.handle) d.handle = DB.meta.handle || "@IZ.NENAD.AN";
+              if (!d.reelUrl) d.reelUrl = DB.meta.reelUrl || "https://www.instagram.com/reel/DgB-TvyIf9D/?lqvp=MWF0cXRsNGN5emoxaQ==";
+              if (d.chapters && !d.chapters.some((c) => c.id === "cover" || (c.subs && c.subs[0] && c.subs[0].isCover))) {
+                d.chapters.unshift({
+                  id: "cover",
+                  num: "0",
+                  title: "Cover & Title",
+                  subs: [{ id: "cover-main", title: "Cover & Title", isRoot: true, isCover: true }]
+                });
+                if (!d.sections) d.sections = {};
+                d.sections["cover-main"] = "";
+              }
+            });
+          }
+        }
+      } catch (e) {}
+    }
+
+    function saveVault() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(vault)); } catch (e) {}
+    }
+
+    function getActiveDoc() {
+      return vault.docs[vault.activeDocId] || vault.docs["essay-22hrs"] || Object.values(vault.docs)[0];
+    }
+
+    function flattenSections(doc) {
+      const list = [];
+      doc.chapters.forEach((ch) => {
+        ch.subs.forEach((sub) => {
+          list.push({
+            chapterId: ch.id,
+            chapterNum: ch.num,
+            chapterTitle: ch.title,
+            subId: sub.id,
+            subTitle: sub.title,
+            isRoot: Boolean(sub.isRoot),
+            isCover: Boolean(sub.isCover)
+          });
+        });
+      });
+      return list;
+    }
+
+    function extractPlainText(html) {
+      const tmp = document.createElement("div");
+      tmp.innerHTML = html || "";
+      return (tmp.textContent || "").trim();
+    }
+
+    function countWordsFromHtml(html) {
+      const text = extractPlainText(html);
+      return text ? text.split(/\s+/).length : 0;
+    }
+
+    function syncDocArtworkEverywhere(doc) {
+      const targetDoc = doc || getActiveDoc();
+      const artSrc = (targetDoc && targetDoc.coverArt) ? targetDoc.coverArt : DB.meta.visualizerArt;
+      const anchorImg = document.getElementById("visualAnchorImg");
+      if (anchorImg) anchorImg.src = artSrc;
+      const heroImg = document.getElementById("coverHeroImg");
+      if (heroImg) heroImg.src = artSrc;
+    }
+
+    function renderPieceList() {
+      const list = document.getElementById("pieceListContainer");
+      if (!list) return;
+      list.innerHTML = "";
+      Object.values(vault.docs).forEach((d) => {
+        let totalWords = 0;
+        Object.entries(d.sections || {}).forEach(([sid, html]) => { if (sid !== "cover-main") totalWords += countWordsFromHtml(html); });
+        const chCount = (d.chapters || []).filter((c) => c.id !== "cover").length;
+        const isCurrent = d.id === vault.activeDocId;
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "piece-card-btn" + (isCurrent ? " is-active-piece" : "");
+        btn.innerHTML = `
+          <div style="min-width:0;">
+            <div class="piece-card-title"></div>
+            <div class="piece-card-sub">${chCount} chambers &middot; ${totalWords} words</div>
+          </div>
+          <span class="piece-card-badge">${isCurrent ? "ACTIVE" : "OPEN"}</span>
+        `;
+        btn.querySelector(".piece-card-title").textContent = d.title;
+        btn.onclick = () => {
+          vault.activeDocId = d.id;
+          const flat = flattenSections(getActiveDoc());
+          vault.activeSectionId = flat[0].subId;
+          saveVault();
+          syncDocArtworkEverywhere(getActiveDoc());
+          renderPieceList();
+          renderChapterTree();
+          setViewMode("single");
+          document.getElementById("switchPieceModal").classList.remove("is-open");
+          whisper("Opened: " + d.title);
+        };
+        const row = document.createElement("div");
+        row.className = "piece-row";
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "holo-mini-btn piece-del";
+        del.textContent = "Delete";
+        del.title = "Delete this piece";
+        del.onclick = () => deletePiece(d);
+        row.append(btn, del);
+        list.appendChild(row);
+      });
+    }
+
+    /* a1.8: delete a piece (one always stays) */
+    function deletePiece(d) {
+      if (Object.keys(vault.docs).length < 2) {
+        whisper("Keep at least one piece");
+        return;
+      }
+      if (!window.confirm(`Delete "${d.title}" and everything in it? This can't be undone.`)) return;
+      delete vault.docs[d.id];
+      if (vault.activeDocId === d.id || !vault.docs[vault.activeDocId]) {
+        vault.activeDocId = Object.keys(vault.docs)[0];
+        vault.activeSectionId = flattenSections(getActiveDoc())[0].subId;
+      }
+      saveVault();
+      syncDocArtworkEverywhere(getActiveDoc());
+      renderPieceList();
+      renderChapterTree();
+      setViewMode("single");
+      whisper("Deleted: " + d.title);
+    }
+
+    /* a1.8: the cover is chapter 0 in the data, never shown with its number */
+    function isCoverChapter(ch) {
+      return ch.id === "cover" || Boolean(ch.subs[0] && ch.subs[0].isCover);
+    }
+
+    function renderChapterTree() {
+      const doc = getActiveDoc();
+      const container = document.getElementById("chapterTree");
+      container.innerHTML = "";
+      const editing = Boolean(window.__editMap);
+
+      doc.chapters.forEach((ch, ci) => {
+        const isCover = isCoverChapter(ch);
+        const root = ch.subs.find((s) => s.isRoot);
+        const branchSubs = ch.subs.filter((s) => !s.isRoot);
+        const chapterWords = isCover ? 0 : ch.subs.reduce((acc, s) => acc + countWordsFromHtml(doc.sections[s.id]), 0);
+        const rootActive = Boolean(root && root.id === vault.activeSectionId);
+
+        const chBtn = makeNode(isCover ? ch.title : `${ch.num}. ${ch.title}`, chapterWords, rootActive);
+        chBtn.onclick = () => selectSection((root || ch.subs[0]).id);
+        container.appendChild(editing && !isCover ? withTools(chBtn, chapterTools(ch, ci)) : chBtn);
+
+        if (branchSubs.length) {
+          const subWrap = document.createElement("div");
+          subWrap.className = "sub-branch";
+          branchSubs.forEach((sub) => {
+            const wc = countWordsFromHtml(doc.sections[sub.id]);
+            const sBtn = makeNode(sub.title, wc, sub.id === vault.activeSectionId);
+            sBtn.onclick = () => selectSection(sub.id);
+            subWrap.appendChild(editing ? withTools(sBtn, subTools(ch, sub)) : sBtn);
+          });
+          container.appendChild(subWrap);
+        }
+      });
+
+      if (editing) {
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "holo-mini-btn map-add-topic";
+        add.textContent = "+ Topic";
+        add.onclick = addChapter;
+        container.appendChild(add);
+      }
+    }
+
+    /* a1.8: one row of the tree */
+    function makeNode(label, words, active) {
+      const btn = document.createElement("button");
+      btn.className = "node-item" + (words > 0 ? " has-words" : "") + (active ? " is-blade-active" : "");
+      btn.innerHTML = `
+        <span class="node-left">
+          <span class="node-pip"></span>
+          <span class="node-label"></span>
+        </span>
+        <span class="node-wc">${words > 0 ? words + "w" : ""}</span>
+      `;
+      btn.querySelector(".node-label").textContent = label;
+      return btn;
+    }
+
+    function withTools(btn, tools) {
+      const row = document.createElement("div");
+      row.className = "node-row";
+      const box = document.createElement("span");
+      box.className = "node-tools";
+      tools.forEach(([glyph, title, fn, danger]) => {
+        const t = document.createElement("button");
+        t.type = "button";
+        t.className = "node-tool" + (danger ? " is-danger" : "");
+        t.textContent = glyph;
+        t.title = title;
+        t.onclick = (e) => { e.stopPropagation(); fn(); };
+        box.appendChild(t);
+      });
+      row.append(btn, box);
+      return row;
+    }
+
+    function chapterTools(ch, ci) {
+      return [
+        ["✎", "Rename topic", () => renameChapter(ch)],
+        ["↑", "Move up", () => moveChapter(ci, -1)],
+        ["↓", "Move down", () => moveChapter(ci, 1)],
+        ["+", "Add a subtopic", () => addSub(ch)],
+        ["×", "Delete topic", () => deleteChapter(ci), true]
+      ];
+    }
+
+    function subTools(ch, sub) {
+      return [
+        ["✎", "Rename subtopic", () => renameSub(ch, sub)],
+        ["↑", "Move up", () => moveSub(ch, sub, -1)],
+        ["↓", "Move down", () => moveSub(ch, sub, 1)],
+        ["×", "Delete subtopic", () => deleteSub(ch, sub), true]
+      ];
+    }
+
+    /* a1.8: numbers follow the order; the cover stays 0 and unnumbered on screen */
+    function renumberChapters(doc) {
+      let n = 0;
+      doc.chapters.forEach((c) => { c.num = isCoverChapter(c) ? "0" : String(++n); });
+    }
+
+    function mapChanged() {
+      renumberChapters(getActiveDoc());
+      saveVault();
+      renderChapterTree();
+      if (vault.viewMode === "full") renderFullEssay(); else renderActiveChamber();
+    }
+
+    function askName(label, current) {
+      const v = window.prompt(label, current || "");
+      return v && v.trim() ? v.trim() : null;
+    }
+
+    function sectionWords(ids) {
+      const doc = getActiveDoc();
+      return ids.reduce((acc, id) => acc + countWordsFromHtml(doc.sections[id]), 0);
+    }
+
+    function dropSections(ids) {
+      const doc = getActiveDoc();
+      ids.forEach((id) => {
+        delete doc.sections[id];
+        if (doc.scratchpads) delete doc.scratchpads[id];
+      });
+    }
+
+    function renameChapter(ch) {
+      const t = askName("Topic name", ch.title);
+      if (!t) return;
+      ch.title = t;
+      ch.subs.filter((s) => s.isRoot).forEach((s) => { s.title = t; });
+      mapChanged();
+    }
+
+    function renameSub(ch, sub) {
+      const t = askName("Subtopic name", sub.title);
+      if (!t) return;
+      sub.title = t;
+      mapChanged();
+    }
+
+    function moveChapter(ci, dir) {
+      const list = getActiveDoc().chapters;
+      const j = ci + dir;
+      if (j < 0 || j >= list.length || isCoverChapter(list[j])) return;
+      [list[ci], list[j]] = [list[j], list[ci]];
+      mapChanged();
+    }
+
+    function moveSub(ch, sub, dir) {
+      const i = ch.subs.indexOf(sub);
+      const j = i + dir;
+      if (j < 0 || j >= ch.subs.length || ch.subs[j].isRoot) return;   // the topic's own page stays first
+      [ch.subs[i], ch.subs[j]] = [ch.subs[j], ch.subs[i]];
+      mapChanged();
+    }
+
+    function addSub(ch) {
+      const t = askName("New subtopic name", "");
+      if (!t) return;
+      const id = "sub-" + Date.now();
+      ch.subs.push({ id, title: t });
+      getActiveDoc().sections[id] = "";
+      mapChanged();
+      selectSection(id);
+      whisper("Subtopic added: " + t);
+    }
+
+    function addChapter() {
+      const t = askName("New topic name", "");
+      if (!t) return;
+      const stamp = Date.now();
+      const id = "sec-" + stamp;
+      getActiveDoc().chapters.push({ id: "ch-" + stamp, num: "", title: t, subs: [{ id, title: t, isRoot: true }] });
+      getActiveDoc().sections[id] = "";
+      mapChanged();
+      selectSection(id);
+      whisper("Topic added: " + t);
+    }
+
+    function deleteSub(ch, sub) {
+      const words = sectionWords([sub.id]);
+      const lastOne = ch.subs.length === 1;
+      const msg = `Delete "${sub.title}"${words ? ` and its ${words} words` : ""}?` +
+        (lastOne ? ` It is the last page of "${ch.title}", so the topic goes too.` : "") + " This can't be undone.";
+      if (!window.confirm(msg)) return;
+      const doc = getActiveDoc();
+      ch.subs.splice(ch.subs.indexOf(sub), 1);
+      dropSections([sub.id]);
+      if (!ch.subs.length) doc.chapters.splice(doc.chapters.indexOf(ch), 1);
+      mapChanged();
+      whisper("Deleted: " + sub.title);
+    }
+
+    function deleteChapter(ci) {
+      const doc = getActiveDoc();
+      const ch = doc.chapters[ci];
+      const ids = ch.subs.map((s) => s.id);
+      const words = sectionWords(ids);
+      const msg = `Delete the topic "${ch.title}"` + (ch.subs.length > 1 ? ` with its ${ch.subs.length} pages` : "") +
+        (words ? ` and ${words} words` : "") + "? This can't be undone.";
+      if (!window.confirm(msg)) return;
+      doc.chapters.splice(ci, 1);
+      dropSections(ids);
+      mapChanged();
+      whisper("Deleted: " + ch.title);
+    }
+
+    function triggerGlitchBurst() {
+      const titleEl = document.getElementById("chamberHeading");
+      if (!titleEl) return;
+      titleEl.classList.remove("is-glitching");
+      void titleEl.offsetWidth;
+      titleEl.classList.add("is-glitching");
+      spawnSparks(14);
+    }
+
+    function selectSection(sectionId) {
+      lastEditorRange = null;
+      closePhonePanels();
+      vault.activeSectionId = sectionId;
+      if (vault.viewMode === "full") setViewMode("single");
+      saveVault();
+      renderChapterTree();
+      renderActiveChamber();
+    }
+
+    function renderCoverPage(doc) {
+      syncDocArtworkEverywhere(doc);
+      document.getElementById("coverMainTitle").textContent = doc.title;
+      document.getElementById("coverByline").textContent = "Authored by: " + (doc.author || "Nate");
+      document.getElementById("coverOpeningQuote").textContent = doc.subtitle || DB.meta.essaySubtitle;
+      const reelUrl = doc.reelUrl || DB.meta.reelUrl;
+      const reelLink = document.getElementById("coverReelLink");
+      const igBadge = document.getElementById("coverIgBadge");
+      reelLink.href = reelUrl;
+      igBadge.href = reelUrl;
+
+      const tocList = document.getElementById("coverTocList");
+      tocList.innerHTML = "";
+      doc.chapters.forEach((ch) => {
+        if (ch.id === "cover" || (ch.subs[0] && ch.subs[0].isCover)) return;
+        const isSingleRoot = ch.subs.length === 1 && ch.subs[0].isRoot;
+        const chapterWords = ch.subs.reduce((acc, s) => acc + countWordsFromHtml(doc.sections[s.id]), 0);
+
+        const chBtn = document.createElement("button");
+        chBtn.className = "cover-toc-ch";
+        chBtn.innerHTML = `<span>${ch.num}. ${ch.title}</span><span class="cover-toc-wc">${chapterWords > 0 ? chapterWords + "w" : ""}</span>`;
+        chBtn.onclick = () => selectSection(ch.subs[0].id);
+        tocList.appendChild(chBtn);
+
+        if (!isSingleRoot) {
+          ch.subs.filter((s) => !s.isRoot).forEach((sub) => {
+            const wc = countWordsFromHtml(doc.sections[sub.id]);
+            const subBtn = document.createElement("button");
+            subBtn.className = "cover-toc-sub";
+            subBtn.innerHTML = `<span>&#9670; ${sub.title}</span><span class="cover-toc-wc">${wc > 0 ? wc + "w" : ""}</span>`;
+            subBtn.onclick = () => selectSection(sub.id);
+            tocList.appendChild(subBtn);
+          });
+        }
+      });
+    }
+
+    function renderActiveChamber() {
+      const doc = getActiveDoc();
+      syncDocArtworkEverywhere(doc);
+      document.getElementById("headerDocTitle").textContent = doc.title;
+      const mobTitle = document.getElementById("mobTitle");
+      if (mobTitle) mobTitle.textContent = doc.title;
+
+      const flat = flattenSections(doc);
+      let current = flat.find((item) => item.subId === vault.activeSectionId) || flat[0];
+      if (!current) return;
+      vault.activeSectionId = current.subId;
+
+      const coverEl = document.getElementById("coverChamberView");
+      const singleEl = document.getElementById("singleChamberView");
+      const artStrip = document.getElementById("visualAnchorCard");
+
+      if (current.isCover || current.chapterId === "cover") {
+        document.body.setAttribute("data-chapter-mood", "intro");
+        coverEl.classList.add("is-active");
+        singleEl.style.display = "none";
+        if (artStrip) artStrip.style.display = "none";
+        renderCoverPage(doc);
+        if (!doc.scratchpads) doc.scratchpads = {};
+        const scratchVal = doc.scratchpads[current.subId] || "";
+        document.getElementById("unsaidTextarea").value = scratchVal;
+        updateUnsaidCounter(scratchVal);
+        updateWordStats();
+        return;
+      }
+
+      coverEl.classList.remove("is-active");
+      singleEl.style.display = "block";
+      if (artStrip) artStrip.style.display = "";
+
+      const knownMoods = new Set(["intro", "felt", "pushpull", "glitches", "guardian", "sharplight", "unsaid", "closing"]);
+      document.body.setAttribute("data-chapter-mood", knownMoods.has(current.chapterId) ? current.chapterId : "intro");
+
+      const crumb = current.isRoot
+        ? `${current.chapterNum}. ${current.chapterTitle}`
+        : `${current.chapterNum}. ${current.chapterTitle}  ›  ${current.subTitle}`;
+      document.getElementById("chamberCrumb").textContent = crumb;
+      document.getElementById("chamberHeading").textContent = current.subTitle;
+
+      if (current.chapterId === "glitches") {
+        triggerGlitchBurst();
+      }
+
+      const surface = document.getElementById("writingSurface");
+      surface.innerHTML = doc.sections[current.subId] || "";
+
+      if (!doc.scratchpads) doc.scratchpads = {};
+      const scratchVal = doc.scratchpads[current.subId] || "";
+      document.getElementById("unsaidTextarea").value = scratchVal;
+      updateUnsaidCounter(scratchVal);
+
+      updateWordStats();
+      updateEchoAnalysis();
+      updateFocusedParagraph();
+    }
+
+    function updateUnsaidCounter(text) {
+      const lines = (text || "").trim() ? (text || "").trim().split(/\n+/).length : 0;
+      document.getElementById("unsaidCount").textContent = String(lines);
+      const link = document.getElementById("btnOpenUnsaid");
+      if (link) link.classList.toggle("is-lit", lines > 0);
+    }
+
+    function renderFullEssay() {
+      const doc = getActiveDoc();
+      const container = document.getElementById("fullEssayView");
+      const reelUrl = doc.reelUrl || DB.meta.reelUrl;
+      container.innerHTML = `
+        <div class="cover-title-block" style="margin-bottom:18px;">
+          <div class="cover-kicker">${doc.handle || "@IZ.NENAD.AN"} &middot; COMPLETE ESSAY VIEW</div>
+          <h1 class="cover-main-title">${doc.title}</h1>
+          <div class="cover-byline">Authored by: ${doc.author || "Nate"}</div>
+        </div>
+        <blockquote class="cover-opening-quote" style="margin-bottom:14px;">${doc.subtitle || DB.meta.essaySubtitle}</blockquote>
+        <div class="cover-link-bar" style="margin-bottom:26px;">
+          <a class="cover-reel-anchor" href="${reelUrl}" target="_blank" rel="noopener noreferrer">
+            &#9654; KAIA - 22hrs (Fan-made Visualizer) &middot; Watch Reel (${doc.handle || "@IZ.NENAD.AN"}) &#8599;
+          </a>
+        </div>
+      `;
+      doc.chapters.forEach((ch) => {
+        if (ch.id === "cover" || (ch.subs[0] && ch.subs[0].isCover)) return;
+        const h2 = document.createElement("h2");
+        h2.className = "full-essay-h2";
+        h2.textContent = `${ch.num}. ${ch.title}`;
+        container.appendChild(h2);
+
+        ch.subs.forEach((sub) => {
+          if (!sub.isRoot) {
+            const h3 = document.createElement("h3");
+            h3.className = "full-essay-h3";
+            h3.textContent = "◆ " + sub.title;
+            container.appendChild(h3);
+          }
+          const body = document.createElement("div");
+          body.className = "full-essay-body";
+          body.innerHTML = doc.sections[sub.id] || "<span style='color:var(--dim-muted);font-style:italic;'>[Empty chamber]</span>";
+          container.appendChild(body);
+        });
+      });
+    }
+
+    function setViewMode(mode) {
+      vault.viewMode = mode;
+      const coverEl = document.getElementById("coverChamberView");
+      const singleEl = document.getElementById("singleChamberView");
+      const fullEl = document.getElementById("fullEssayView");
+      const btnSingle = document.getElementById("btnModeSingle");
+      const btnFull = document.getElementById("btnModeFull");
+
+      if (mode === "full") {
+        if (coverEl) coverEl.classList.remove("is-active");
+        singleEl.style.display = "none";
+        fullEl.style.display = "block";
+        btnSingle.style.borderColor = "rgba(143,214,255,0.28)";
+        btnFull.style.borderColor = "var(--rgb-g)";
+        renderFullEssay();
+      } else {
+        fullEl.style.display = "none";
+        btnFull.style.borderColor = "rgba(143,214,255,0.28)";
+        btnSingle.style.borderColor = "var(--rgb-g)";
+        renderActiveChamber();
+      }
+      saveVault();
+    }
+
+    function getActiveBlockquote() {
+      const surface = document.getElementById("writingSurface");
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return null;
+      let node = sel.anchorNode;
+      while (node && node !== surface) {
+        if (node.nodeType === 1 && node.tagName === "BLOCKQUOTE") return node;
+        node = node.parentNode;
+      }
+      return null;
+    }
+
+    function placeCaretAtEnd(el) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+
+    function unwrapBlockquote(bq) {
+      const surface = document.getElementById("writingSurface");
+      if (!bq || !surface.contains(bq)) return;
+      const frag = document.createDocumentFragment();
+      const lines = (bq.innerHTML || "").split(/<br\s*\/?>/i);
+      let lastP = null;
+      lines.forEach((lineHtml) => {
+        const p = document.createElement("div");
+        p.innerHTML = lineHtml.trim() ? lineHtml : "<br>";
+        frag.appendChild(p);
+        lastP = p;
+      });
+      bq.parentNode.replaceChild(frag, bq);
+      if (lastP) placeCaretAtEnd(lastP);
+    }
+
+    function toggleBlockquote() {
+      const surface = document.getElementById("writingSurface");
+      surface.focus();
+      const activeBq = getActiveBlockquote();
+
+      if (activeBq || armedFormat.quote) {
+        if (activeBq) {
+          unwrapBlockquote(activeBq);
+        }
+        armedFormat.quote = false;
+        updateFormatVisualCues();
+        handleEditorInput();
+        whisper("Quote OFF");
+        return;
+      }
+
+      const sel = window.getSelection();
+      if (!surface.textContent.trim() && surface.querySelectorAll("blockquote").length === 0) {
+        surface.innerHTML = "<blockquote><br></blockquote>";
+        const bq = surface.querySelector("blockquote");
+        placeCaretAtEnd(bq);
+      } else {
+        document.execCommand("formatBlock", false, "blockquote");
+        if (!getActiveBlockquote() && sel && sel.rangeCount) {
+          const bq = document.createElement("blockquote");
+          bq.innerHTML = "<br>";
+          const range = sel.getRangeAt(0);
+          range.insertNode(bq);
+          placeCaretAtEnd(bq);
+        }
+      }
+      armedFormat.quote = true;
+      updateFormatVisualCues();
+      handleEditorInput();
+      whisper("Quote ON (click Q or press Enter on blank line to exit)");
+    }
+
+    function updateFormatVisualCues() {
+      const btnB = document.getElementById("btnBold");
+      const btnI = document.getElementById("btnItalic");
+      const btnQ = document.getElementById("btnQuote");
+      const badgeB = document.getElementById("badgeBold");
+      const badgeI = document.getElementById("badgeItalic");
+      const badgeQ = document.getElementById("badgeQuote");
+      const badgeFont = document.getElementById("badgeFont");
+
+      btnB.classList.toggle("is-latched", armedFormat.bold);
+      btnI.classList.toggle("is-latched", armedFormat.italic);
+      if (btnQ) btnQ.classList.toggle("is-latched", armedFormat.quote);
+
+      badgeB.style.display = armedFormat.bold ? "inline-block" : "none";
+      badgeB.classList.toggle("is-hot", armedFormat.bold);
+
+      badgeI.style.display = armedFormat.italic ? "inline-block" : "none";
+      badgeI.classList.toggle("is-hot", armedFormat.italic);
+
+      if (badgeQ) {
+        badgeQ.style.display = armedFormat.quote ? "inline-block" : "none";
+        badgeQ.classList.toggle("is-hot", armedFormat.quote);
+      }
+
+      const fontName = (vault.bodyFont || "serif").toUpperCase();
+      badgeFont.textContent = "FONT: " + fontName;
+      document.querySelectorAll(".font-pill").forEach((pill) => {
+        pill.classList.toggle("is-latched", pill.dataset.font === vault.bodyFont);
+      });
+    }
+
+    function syncArmedStateFromSelection() {
+      const surface = document.getElementById("writingSurface");
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+      if (!surface.contains(sel.anchorNode)) return;
+      armedFormat.quote = Boolean(getActiveBlockquote());
+      if (!sel.isCollapsed) {
+        armedFormat.bold = document.queryCommandState("bold");
+        armedFormat.italic = document.queryCommandState("italic");
+      }
+      updateFormatVisualCues();
+    }
+
+    function applyBodyFont(fontMode) {
+      vault.bodyFont = ["serif", "sans", "mono"].includes(fontMode) ? fontMode : "serif";
+      document.documentElement.setAttribute("data-body-font", vault.bodyFont);
+      updateFormatVisualCues();
+      saveVault();
+    }
+
+    function updateWordStats() {
+      const doc = getActiveDoc();
+      const chamberHtml = doc.sections[vault.activeSectionId] || "";
+      const chamberText = extractPlainText(chamberHtml);
+      const chamberWords = countWordsFromHtml(chamberHtml);
+
+      let totalWords = 0;
+      Object.entries(doc.sections).forEach(([sid, html]) => { if (sid !== "cover-main") totalWords += countWordsFromHtml(html); });
+
+      let cadenceStr = "Ready";
+      if (chamberWords > 0) {
+        const sentences = chamberText.split(/[.!?]+/).map((s) => s.trim()).filter(Boolean);
+        const avgLen = sentences.length ? Math.round(chamberWords / sentences.length) : chamberWords;
+        const mins = Math.max(1, Math.round(chamberWords / 210));
+        let feel = "Measured";
+        if (avgLen <= 10) feel = "Taut";
+        else if (avgLen >= 22) feel = "Expansive";
+        cadenceStr = `~${mins}m read · ${feel} (${avgLen}w/sent)`;
+      }
+
+      document.getElementById("wordStats").textContent =
+        `Chamber: ${chamberWords}w · Total: ${totalWords}w · ${cadenceStr}`;
+      document.getElementById("railTotalWords").textContent = `VAULT HELD · ${totalWords} WORDS`;
+    }
+
+    const STOPWORDS = new Set([
+      "that","this","with","from","have","were","been","they","them","their","there",
+      "what","when","where","which","while","into","just","like","about","would",
+      "could","should","your","ours","hers","his","its","also","only","more","most",
+      "some","such","than","then","very","over","under","again","still","even","much"
+    ]);
+
+    function updateEchoAnalysis() {
+      const bar = document.getElementById("echoBar");
+      if (!vault.echoCheck) {
+        bar.classList.remove("is-visible");
+        return;
+      }
+      bar.classList.add("is-visible");
+      const doc = getActiveDoc();
+      const text = extractPlainText(doc.sections[vault.activeSectionId] || "").toLowerCase();
+      const words = text.match(/[a-z']{4,}/g) || [];
+      const counts = {};
+      words.forEach((w) => { if (!STOPWORDS.has(w)) counts[w] = (counts[w] || 0) + 1; });
+      const echoes = Object.entries(counts).filter(([, c]) => c >= 3).sort((a, b) => b[1] - a[1]).slice(0, 7);
+
+      if (!echoes.length) {
+        bar.innerHTML = "<span>Echo Signal: Clean &mdash; no 4+ letter word repeats 3+ times.</span>";
+        return;
+      }
+      bar.innerHTML = `<span>Chamber Echoes:</span> ` + echoes.map(([w, c]) => `<span class="echo-chip">${w} &times;${c}</span>`).join("");
+    }
+
+    function updateFocusedParagraph() {
+      const surface = document.getElementById("writingSurface");
+      if (!surface) return;
+      Array.from(surface.children).forEach((el) => el.classList.remove("is-focused-block"));
+      if (!vault.typewriterMode) return;
+
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+      let node = sel.anchorNode;
+      while (node && node !== surface && node.parentNode !== surface) node = node.parentNode;
+      if (node && node !== surface && node.nodeType === 1) {
+        node.classList.add("is-focused-block");
+        node.scrollIntoView({ block: "nearest", behavior: "smooth" });
+      }
+    }
+
+    function parseTimestampSec(ts) {
+      const parts = ts.split(":");
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    }
+
+    function formatTime(sec) {
+      if (isNaN(sec) || sec < 0) return "0:00";
+      const m = Math.floor(sec / 60);
+      const s = String(Math.floor(sec % 60)).padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    let currentActiveLyric = DB.lyrics[2];
+
+    function renderLyrics() {
+      const box = document.getElementById("lyricsContainer");
+      box.innerHTML = "";
+      DB.lyrics.forEach((item) => {
+        const btn = document.createElement("button");
+        btn.className = "lyric-line-btn";
+        btn.dataset.sec = String(parseTimestampSec(item.t));
+        btn.innerHTML = `<span class="lyric-ts">${item.t}</span><span>${item.line}</span>`;
+        btn.onclick = () => {
+          insertCueChip(item.t, item.line);
+          const player = document.getElementById("trackPlayer");
+          if (player && player.src) {
+            player.currentTime = parseTimestampSec(item.t);
+            player.play().catch(() => {});
+          }
+        };
+        box.appendChild(btn);
+      });
+    }
+
+    function syncActiveLyric(currentSec) {
+      const rows = Array.from(document.querySelectorAll(".lyric-line-btn"));
+      let matched = DB.lyrics[0];
+      let activeBtn = null;
+      for (let i = 0; i < DB.lyrics.length; i++) {
+        const sec = parseTimestampSec(DB.lyrics[i].t);
+        if (currentSec >= sec) {
+          matched = DB.lyrics[i];
+          activeBtn = rows[i];
+        } else break;
+      }
+      currentActiveLyric = matched;
+      document.getElementById("domeLiveLyric").textContent = `[${matched.t}] "${matched.line}"`;
+      rows.forEach((r) => r.classList.remove("is-active-lyric"));
+      if (activeBtn) activeBtn.classList.add("is-active-lyric");
+    }
+
+
+    function compressImageFile(file, maxWidth = 1400, quality = 0.86) {
+      return new Promise((resolve, reject) => {
+        if (!file) return reject(new Error("No file"));
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          if (file.type === "image/gif") {
+            return resolve(reader.result);
+          }
+          const img = new Image();
+          img.onerror = () => resolve(reader.result);
+          img.onload = () => {
+            let w = img.width;
+            let h = img.height;
+            if (w > maxWidth) {
+              h = Math.round((h * maxWidth) / w);
+              w = maxWidth;
+            }
+            const canvas = document.createElement("canvas");
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, w, h);
+            const outType = file.type === "image/png" ? "image/png" : "image/jpeg";
+            resolve(canvas.toDataURL(outType, quality));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    let lastEditorRange = null;
+
+    function captureEditorRange() {
+      const surface = document.getElementById("writingSurface");
+      const sel = window.getSelection();
+      if (!surface || !sel || !sel.rangeCount) return;
+      const range = sel.getRangeAt(0);
+      if (surface.contains(range.commonAncestorContainer)) {
+        lastEditorRange = range.cloneRange();
+      }
+    }
+
+    function restoreEditorRange() {
+      const surface = document.getElementById("writingSurface");
+      if (!surface) return false;
+      surface.focus();
+      if (lastEditorRange && surface.contains(lastEditorRange.commonAncestorContainer)) {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(lastEditorRange);
+        return true;
+      }
+      return false;
+    }
+
+    function buildMediaFigureHtml(src, caption = "", size = "full") {
+      const safeCap = (caption || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+      const safeSize = ["full", "md", "sm"].includes(size) ? size : "full";
+      return `<figure class="holo-media-block" contenteditable="false" data-size="${safeSize}"><div class="holo-media-controls"><button type="button" class="media-ctrl-btn" data-media-act="size">Size</button><button type="button" class="media-ctrl-btn" data-media-act="caption">Caption</button><button type="button" class="media-ctrl-btn is-danger" data-media-act="delete">&times;</button></div><img src="${src}" alt="${safeCap || "Inserted visual"}" /><figcaption class="holo-media-caption">${safeCap}</figcaption></figure><div><br></div>`;
+    }
+
+    function insertHtmlAtEditorCursor(htmlSnippet) {
+      const surface = document.getElementById("writingSurface");
+      const restored = restoreEditorRange();
+      const sel = window.getSelection();
+      if (!restored && sel) {
+        const endRange = document.createRange();
+        endRange.selectNodeContents(surface);
+        endRange.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(endRange);
+      }
+      if (sel && sel.rangeCount && surface.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        const temp = document.createElement("div");
+        temp.innerHTML = htmlSnippet;
+        const frag = document.createDocumentFragment();
+        let lastNode = null;
+        while (temp.firstChild) {
+          lastNode = frag.appendChild(temp.firstChild);
+        }
+        range.insertNode(frag);
+        if (lastNode) {
+          const afterRange = document.createRange();
+          if (lastNode.nodeType === 1 && lastNode.tagName === "DIV") {
+            afterRange.setStart(lastNode, 0);
+          } else {
+            afterRange.setStartAfter(lastNode);
+          }
+          afterRange.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(afterRange);
+          lastEditorRange = afterRange.cloneRange();
+        }
+      } else {
+        document.execCommand("insertHTML", false, htmlSnippet);
+      }
+    }
+
+    function insertMediaIntoActiveChamber(src, caption = "", size = "full") {
+      if (!src) return;
+      if (vault.viewMode !== "single") setViewMode("single");
+      ensureWritingChamber();
+
+      const figHtml = buildMediaFigureHtml(src, caption, size);
+      insertHtmlAtEditorCursor(figHtml);
+      handleEditorInput();
+      whisper("Visual media projected at cursor");
+    }
+
+    /* a1.7: the cover has no writing surface; anything inserted there goes to the first chamber */
+    function ensureWritingChamber() {
+      const flat = flattenSections(getActiveDoc());
+      const current = flat.find((item) => item.subId === vault.activeSectionId);
+      if (current && (current.isCover || current.chapterId === "cover")) {
+        const firstWritingSec = flat.find((item) => !item.isCover && item.chapterId !== "cover");
+        if (firstWritingSec) {
+          selectSection(firstWritingSec.subId);
+          lastEditorRange = null;
+        }
+      }
+    }
+
+    function insertCueChip(timeStr, lineText) {
+      if (vault.viewMode !== "single") setViewMode("single");
+      ensureWritingChamber();
+      const snippet = `<span class="cue-chip" contenteditable="false">[${timeStr} &ldquo;${lineText}&rdquo;]</span>&nbsp;`;
+      insertHtmlAtEditorCursor(snippet);
+      handleEditorInput();
+    }
+
+    function handleEditorInput() {
+      const doc = getActiveDoc();
+      const surface = document.getElementById("writingSurface");
+      if (vault.activeSectionId === "cover-main") return;   // a1.7: the hidden surface never writes into the cover
+      doc.sections[vault.activeSectionId] = surface.innerHTML;
+      saveVault();
+      updateWordStats();
+      updateEchoAnalysis();
+      renderChapterTree();
+      updateFocusedParagraph();
+      pulseRgbPillars();
+    }
+
+    function pulseRgbPillars() {
+      const ids = ["pillarR", "pillarG", "pillarB", "pillarV"];
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.style.height = (35 + Math.round(Math.random() * 62)) + "%";
+      });
+    }
+
+    const sparks = [];
+    function spawnSparks(count) {
+      const colors = skinSparkColours();
+      for (let i = 0; i < count; i++) {
+        sparks.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+          vx: (Math.random() - 0.5) * 0.45,
+          vy: -0.15 - Math.random() * 0.35,
+          r: 1 + Math.random() * 1.8,
+          alpha: 0.35 + Math.random() * 0.55,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+      if (sparks.length > 85) sparks.splice(0, sparks.length - 85);
+    }
+
+    function startSpatialLoop() {
+      const canvas = document.getElementById("spatialCanvas");
+      const ctx = canvas.getContext("2d");
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener("resize", resize);
+      spawnSparks(48);
+
+      function tick() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (!document.body.classList.contains("focus-mode")) {
+          for (let i = 0; i < sparks.length; i++) {
+            const s = sparks[i];
+            s.x += s.vx;
+            s.y += s.vy;
+            if (s.y < -10) { s.y = canvas.height + 10; s.x = Math.random() * canvas.width; }
+            if (s.x < -10) s.x = canvas.width + 10;
+            if (s.x > canvas.width + 10) s.x = -10;
+
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fillStyle = s.color;
+            ctx.globalAlpha = s.alpha;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = s.color;
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          ctx.shadowBlur = 0;
+        }
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function downloadBlob(filename, content, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function htmlToPlainMarkdown(html) {
+      const tmp = document.createElement("div");
+      tmp.innerHTML = html || "";
+      tmp.querySelectorAll("blockquote").forEach((bq) => {
+        bq.textContent = "\n> " + bq.textContent.trim() + "\n";
+      });
+      tmp.querySelectorAll("ol").forEach((ol) => {
+        Array.from(ol.children).forEach((li, i) => li.prepend("\n" + (i + 1) + ". "));
+      });
+      tmp.querySelectorAll("ul > li").forEach((li) => li.prepend("\n- "));
+      tmp.querySelectorAll("br").forEach((br) => br.replaceWith("\n"));
+      tmp.querySelectorAll("div, p").forEach((el) => el.prepend("\n"));
+      return (tmp.textContent || "").replace(/\n{3,}/g, "\n\n").trim();
+    }
+
+    function buildHolographicExportDocument(doc, autoPrint) {
+      const reelUrl = doc.reelUrl || DB.meta.reelUrl;
+      const handle = doc.handle || "@IZ.NENAD.AN";
+      const author = doc.author || "Nate";
+      const heroArt = doc.coverArt || DB.meta.visualizerArt;
+      const fontMap = {
+        serif: "'Georgia', 'Palatino Linotype', 'Book Antiqua', serif",
+        sans: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
+        mono: "'Cascadia Code', 'Consolas', monospace"
+      };
+      const activeWritingFont = fontMap[vault.bodyFont || "serif"] || fontMap.serif;
+
+      const pages = [];
+      const subEmpty = (sub) => {
+        const html = doc.sections[sub.id] || "";
+        return !extractPlainText(html) && !/<img/i.test(html);
+      };
+      let coverTocHtml = "";
+      let railTocHtml = `<button type="button" class="rail-node is-active-node" data-target="page-cover"><span class="rail-pip"></span><span class="rail-label">Cover &amp; Title</span></button>`;
+
+      doc.chapters.forEach((ch) => {
+        if (ch.id === "cover" || (ch.subs[0] && ch.subs[0].isCover)) return;
+        const isSingleRoot = !ch.subs.some((s) => !s.isRoot);
+        const firstPageId = "page-" + ch.subs[0].id;
+        const chEmpty = ch.subs.every(subEmpty);
+
+        coverTocHtml += `<a class="toc-ch${chEmpty ? " is-empty" : ""}" href="#${firstPageId}" data-target="${firstPageId}"><span class="toc-num">${ch.num}.</span> <span>${ch.title}</span></a>`;
+        railTocHtml += `<button type="button" class="rail-node" data-target="${firstPageId}"><span class="rail-pip"></span><span class="rail-label">${ch.num}. ${ch.title}</span></button>`;
+
+        if (!isSingleRoot) {
+          railTocHtml += `<div class="rail-sub-branch">`;
+          ch.subs.filter((s) => !s.isRoot).forEach((sub) => {
+            const pId = "page-" + sub.id;
+            coverTocHtml += `<a class="toc-sub${subEmpty(sub) ? " is-empty" : ""}" href="#${pId}" data-target="${pId}">&#9670; ${sub.title}</a>`;
+            railTocHtml += `<button type="button" class="rail-node is-sub-node" data-target="${pId}"><span class="rail-pip"></span><span class="rail-label">${sub.title}</span></button>`;
+          });
+          railTocHtml += `</div>`;
+        }
+
+        ch.subs.forEach((sub) => {
+          const pId = "page-" + sub.id;
+          const crumb = sub.isRoot
+            ? `${ch.num}. ${ch.title}`
+            : `${ch.num}. ${ch.title}  &rsaquo;  ${sub.title}`;
+          const raw = (doc.sections[sub.id] || "").trim();
+          pages.push({
+            id: pId,
+            chapterId: ch.id,
+            crumb,
+            heading: sub.title,
+            bodyHtml: raw || "<p class='empty-note'>[Chamber awaiting projection]</p>",
+            isEmpty: subEmpty(sub)
+          });
+        });
+      });
+
+      const pagesHtml = pages.map((pg, idx) => {
+        const prevTarget = idx === 0 ? "page-cover" : pages[idx - 1].id;
+        const prevLabel = idx === 0 ? "&larr; Cover &amp; Contents" : "&larr; Previous";
+        const nextBtn = idx < pages.length - 1
+          ? `<button type="button" class="nav-pill" data-target="${pages[idx + 1].id}">Next &rarr;</button>`
+          : `<button type="button" class="nav-pill" data-target="page-cover">Return to Cover &#8617;</button>`;
+
+        return `<article id="${pg.id}" class="chamber-page${pg.isEmpty ? " is-empty" : ""}" data-chapter="${pg.chapterId}">
+          <div class="page-crumb">${pg.crumb}</div>
+          <h2 class="page-title">${pg.heading}</h2>
+          <div class="essay-body">${pg.bodyHtml}</div>
+          <nav class="page-footer-nav" aria-label="Page navigation">
+            <button type="button" class="nav-pill" data-target="${prevTarget}">${prevLabel}</button>
+            <button type="button" class="nav-pill is-center" data-target="page-cover">Cover &amp; Contents</button>
+            ${nextBtn}
+          </nav>
+        </article>`;
+      }).join("\n");
+
+      const sparkNodes = Array.from({ length: 44 }, (_, i) => {
+        const colors = ["#ff3d66", "#5affb8", "#5ca8ff", "#8fd6ff", "#f2b25c"];
+        const c = colors[i % colors.length];
+        const x = ((i * 23 + 7) % 96) + 2;
+        const y = ((i * 37 + 11) % 94) + 3;
+        const size = (i % 3) + 2;
+        return `<span class="holo-spark" style="left:${x}%;top:${y}%;width:${size}px;height:${size}px;background:${c};box-shadow:0 0 8px ${c};"></span>`;
+      }).join("");
+
+      const printScript = autoPrint
+        ? `<script>window.addEventListener("load", function(){ setTimeout(function(){ window.print(); }, 250); });<\/script>`
+        : "";
+
+      const initialBodyClass = autoPrint ? "is-print-sheet" : "is-cover-view";
+
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>${doc.title} &mdash; Holographic Edition</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: #020307 !important;
+    color: #e7f1fa;
+    font-family: ${activeWritingFont};
+  }
+  .void-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 35%, rgba(16, 34, 62, 0.36) 0%, rgba(2, 3, 7, 0.96) 85%),
+      linear-gradient(180deg, #020307 0%, #030711 50%, #010205 100%);
+  }
+  .void-grid {
+    position: fixed;
+    left: -15%;
+    right: -15%;
+    bottom: 0;
+    height: 36%;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(90deg, rgba(143, 214, 255, 0.08) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(143, 214, 255, 0.08) 1px, transparent 1px);
+    background-size: 38px 28px;
+    mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.9) 100%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.9) 100%);
+  }
+  .holo-spark {
+    position: fixed;
+    border-radius: 50%;
+    opacity: 0.72;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .reticle {
+    position: fixed;
+    width: 22px;
+    height: 22px;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .reticle.tl { top: 10px; left: 10px; border-top: 1.5px solid #8fd6ff; border-left: 1.5px solid #8fd6ff; box-shadow: -2px -1px 0 rgba(255,61,102,0.6); }
+  .reticle.tr { top: 10px; right: 10px; border-top: 1.5px solid #8fd6ff; border-right: 1.5px solid #8fd6ff; box-shadow: 2px -1px 0 rgba(92,168,255,0.6); }
+  .reticle.bl { bottom: 10px; left: 10px; border-bottom: 1.5px solid #8fd6ff; border-left: 1.5px solid #8fd6ff; box-shadow: -2px 1px 0 rgba(90,255,184,0.6); }
+  .reticle.br { bottom: 10px; right: 10px; border-bottom: 1.5px solid #8fd6ff; border-right: 1.5px solid #8fd6ff; box-shadow: 2px 1px 0 rgba(255,61,102,0.6); }
+
+  /* Fixed Left Rail (appears in Studio Split View when reading any chamber) */
+  .studio-left-rail {
+    position: fixed;
+    top: 22px;
+    left: 22px;
+    bottom: 22px;
+    width: 256px;
+    z-index: 12;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 12px;
+    background: linear-gradient(180deg, rgba(8, 15, 28, 0.86) 0%, rgba(3, 6, 12, 0.92) 100%);
+    border: 1px solid rgba(143, 214, 255, 0.24);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.8), -1.5px 0 0 rgba(255, 61, 102, 0.35), 1.5px 0 0 rgba(90, 255, 184, 0.3);
+    overflow-y: auto;
+  }
+  body.is-split-view .studio-left-rail {
+    display: flex;
+  }
+  .rail-head {
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #8fd6ff;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(143, 214, 255, 0.18);
+  }
+  .rail-node {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #a9bed4;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 12px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  .rail-node:hover {
+    color: #f4f9fd;
+    transform: translateX(2px);
+  }
+  .rail-pip {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1px solid #8fd6ff;
+    flex-shrink: 0;
+  }
+  .rail-node.is-active-node {
+    color: #f4f9fd;
+    font-weight: 600;
+    padding: 7px 14px 7px 12px;
+    background: linear-gradient(90deg, rgba(143, 214, 255, 0.18) 0%, rgba(12, 24, 44, 0.65) 75%, rgba(143, 214, 255, 0.08) 100%);
+    clip-path: polygon(0% 0%, calc(100% - 10px) 0%, 100% 50%, calc(100% - 10px) 100%, 0% 100%, 5px 50%);
+    filter: drop-shadow(-1.5px 0 0 rgba(255, 61, 102, 0.55)) drop-shadow(1.5px 0 0 rgba(90, 255, 184, 0.55));
+  }
+  .rail-node.is-active-node .rail-pip {
+    background: #5affb8;
+    border-color: #f4f9fd;
+    box-shadow: 0 0 8px #5affb8;
+  }
+  .rail-sub-branch {
+    padding-left: 14px;
+    margin-left: 7px;
+    border-left: 1px solid rgba(143, 214, 255, 0.16);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .rail-node.is-sub-node {
+    font-size: 11.5px;
+    padding: 5px 10px;
+  }
+
+  .doc-shell {
+    position: relative;
+    z-index: 2;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 24px 56px;
+    transition: margin-left 0.2s ease, max-width 0.2s ease;
+  }
+  body.is-split-view .doc-shell {
+    margin-left: 300px;
+    margin-right: 0;
+    max-width: none;
+    padding: 34px max(28px, calc((100vw - 300px - 780px) / 2)) 64px;
+  }
+
+  .cover-sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  body.is-split-view .cover-sheet {
+    display: none;
+  }
+  body.is-print-sheet .cover-sheet {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .hero-banner {
+    position: relative;
+    border: 1px solid rgba(143, 214, 255, 0.38);
+    box-shadow: -2px 0 12px rgba(255, 61, 102, 0.35), 2px 0 12px rgba(90, 255, 184, 0.3);
+    overflow: hidden;
+  }
+  .hero-banner img {
+    display: block;
+    width: 100%;
+    max-height: 250px;
+    object-fit: cover;
+  }
+  .ig-pill {
+    position: absolute;
+    left: 12px;
+    bottom: 10px;
+    padding: 4px 10px;
+    background: rgba(2, 3, 7, 0.86);
+    border: 1px solid rgba(143, 214, 255, 0.5);
+    color: #f4f9fd;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+  .cover-title {
+    font-family: "Cinzel", "Palatino Linotype", Georgia, serif;
+    font-size: 29px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #f4f9fd;
+    margin: 4px 0 0;
+    text-shadow: -1.5px 0 rgba(255, 61, 102, 0.75), 1.5px 0 rgba(90, 255, 184, 0.72);
+  }
+  .cover-author {
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #5affb8;
+  }
+  .cover-quote {
+    margin: 0;
+    padding: 12px 16px;
+    border-left: 2px solid #8fd6ff;
+    background: rgba(143, 214, 255, 0.08);
+    color: #f4f9fd;
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.68;
+  }
+  .reel-link {
+    display: inline-block;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 11px;
+    color: #8fd6ff;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(143, 214, 255, 0.6);
+    padding-bottom: 2px;
+  }
+  .reel-link:hover {
+    color: #5affb8;
+    border-bottom-color: #5affb8;
+  }
+  .toc-panel {
+    border: 1px solid rgba(143, 214, 255, 0.24);
+    background: rgba(8, 15, 28, 0.62);
+    padding: 14px 18px;
+  }
+  .toc-title {
+    font-family: "Cinzel", Georgia, serif;
+    font-size: 12.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #d4f0ff;
+    border-bottom: 1px solid rgba(143, 214, 255, 0.18);
+    padding-bottom: 7px;
+    margin-bottom: 10px;
+  }
+  .toc-ch, .toc-sub {
+    display: block;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: all 0.14s ease;
+  }
+  .toc-ch {
+    font-family: "Segoe UI", sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #f4f9fd;
+    padding: 5px 8px;
+    margin-top: 3px;
+  }
+  .toc-ch:hover {
+    color: #5affb8;
+    background: rgba(143, 214, 255, 0.09);
+    transform: translateX(3px);
+  }
+  .toc-num { color: #8fd6ff; font-family: "Cascadia Code", monospace; }
+  .toc-sub {
+    font-family: "Segoe UI", sans-serif;
+    font-size: 11.5px;
+    color: #a9bed4;
+    padding: 4px 8px 4px 22px;
+    margin-top: 2px;
+  }
+  .toc-sub:hover {
+    color: #d4f0ff;
+    background: rgba(143, 214, 255, 0.07);
+    transform: translateX(3px);
+  }
+
+  /* Individual Chamber Pages */
+  .chamber-page {
+    display: none;
+    flex-direction: column;
+    min-height: calc(100vh - 76px);
+  }
+  .chamber-page.is-active-page {
+    display: flex;
+  }
+  body.is-print-sheet .chamber-page {
+    display: block;
+    min-height: auto;
+    margin-bottom: 28px;
+  }
+  .page-crumb {
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #8fd6ff;
+    margin-bottom: 6px;
+  }
+  .page-title {
+    font-family: "Cinzel", "Palatino Linotype", Georgia, serif;
+    font-size: 26px;
+    color: #f4f9fd;
+    border-bottom: 1px solid rgba(143, 214, 255, 0.22);
+    padding-bottom: 10px;
+    margin: 0 0 20px;
+    text-shadow: -1.5px 0 rgba(255, 61, 102, 0.72), 1.5px 0 rgba(90, 255, 184, 0.68);
+    page-break-after: avoid;
+  }
+  .essay-body {
+    flex: 1;
+    font-size: 16.5px;
+    line-height: 1.85;
+    color: #e7f1fa;
+    white-space: pre-wrap;
+  }
+  .essay-body p, .essay-body div { margin: 0 0 0.9em; }
+  .essay-body ul, .essay-body ol { padding-left: 1.6em; margin: 0 0 0.9em; white-space: normal; }
+  .essay-body li { margin: 0.2em 0; }
+  .essay-body li::marker { color: #8fd6ff; }
+  .essay-body blockquote {
+    border-left: 2px solid #8fd6ff;
+    background: rgba(143, 214, 255, 0.08);
+    padding: 10px 16px;
+    margin: 14px 0;
+    color: #f4f9fd;
+    font-style: italic;
+  }
+  .cue-chip {
+    display: inline-block;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 11px;
+    color: #5affb8;
+    background: rgba(90, 255, 184, 0.1);
+    border: 1px solid rgba(90, 255, 184, 0.4);
+    border-radius: 3px;
+    padding: 0 6px;
+  }
+  .holo-media-block {
+    display: block;
+    margin: 18px auto;
+    padding: 0;
+    width: 100%;
+    line-height: 0;
+    white-space: normal;
+    overflow: hidden;
+    border: 1px solid rgba(143, 214, 255, 0.34);
+    background: #010205;
+    box-shadow: -2px 0 10px rgba(255, 61, 102, 0.25), 2px 0 10px rgba(90, 255, 184, 0.22);
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .holo-media-block[data-size="md"] { width: 72%; }
+  .holo-media-block[data-size="sm"] { width: 48%; }
+  .holo-media-block img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0;
+    padding: 0;
+  }
+  .holo-media-caption {
+    display: block;
+    padding: 6px 12px;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 10px;
+    line-height: 1.45;
+    color: #a9bed4;
+    background: rgba(3, 6, 12, 0.92);
+    border-top: 1px solid rgba(143, 214, 255, 0.16);
+  }
+  .holo-media-caption:empty { display: none; }
+  .holo-media-controls { display: none !important; }
+  .empty-note { color: #667b94; font-style: italic; font-size: 13.5px; }
+
+  .page-footer-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 34px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(143, 214, 255, 0.18);
+  }
+  .nav-pill {
+    background: rgba(8, 15, 28, 0.78);
+    border: 1px solid rgba(143, 214, 255, 0.32);
+    color: #d4f0ff;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  .nav-pill:hover {
+    border-color: #5affb8;
+    color: #5affb8;
+    box-shadow: 0 0 12px rgba(90, 255, 184, 0.25);
+  }
+  .nav-pill.is-center {
+    border-color: rgba(143, 214, 255, 0.22);
+    color: #8fd6ff;
+  }
+
+  .print-banner {
+    position: fixed;
+    top: 14px;
+    right: 18px;
+    z-index: 20;
+    background: rgba(6, 12, 24, 0.92);
+    border: 1px solid #5affb8;
+    color: #f4f9fd;
+    font-family: "Cascadia Code", monospace;
+    font-size: 11px;
+    padding: 7px 12px;
+    cursor: pointer;
+  }
+  @media (max-width: 920px) {
+    .studio-left-rail {
+      position: static;
+      width: 100%;
+      margin-bottom: 18px;
+    }
+    body.is-split-view .doc-shell {
+      margin-left: auto;
+    }
+  }
+  @media print {
+    html, body { background: #020307 !important; }
+    .print-banner, .studio-left-rail, .page-footer-nav, .holo-spark, .reticle, .void-grid { display: none !important; }
+    body, body.is-split-view, body.is-cover-view { display: block !important; }
+    .doc-shell { margin: 0 !important; max-width: none !important; padding: 0 18mm !important; }
+    .cover-sheet { display: flex !important; gap: 10px; padding-top: 16mm; page-break-after: always; break-after: page; }
+    .hero-banner img { max-height: 190px; }
+    .cover-quote { font-size: 13px; padding: 10px 14px; }
+    .toc-panel { padding: 10px 16px; }
+    .toc-title { margin-bottom: 6px; padding-bottom: 5px; }
+    .toc-ch { font-size: 11.5px; padding: 2px 8px; margin-top: 2px; }
+    .toc-sub { font-size: 10.5px; padding: 1px 8px 1px 24px; margin-top: 0; }
+    .toc-ch.is-empty, .toc-sub.is-empty { opacity: 0.5; }
+    .chamber-page {
+      display: block !important; min-height: auto !important; margin: 0 !important;
+      break-before: page; page-break-before: always;
+      padding: 16mm 0;
+      box-decoration-break: clone; -webkit-box-decoration-break: clone;
+    }
+    .chamber-page.is-empty { display: none !important; }
+    .page-title { font-size: 21pt; }
+    .essay-body { font-size: 11.5pt !important; line-height: 1.72 !important; }
+    .essay-body p, .essay-body div, .essay-body blockquote, .essay-body li { break-inside: avoid-page; }
+  }
+</style>
+</head>
+<body class="${initialBodyClass}">
+  <div class="void-backdrop"></div>
+  <div class="void-grid"></div>
+  ${sparkNodes}
+  <div class="reticle tl"></div>
+  <div class="reticle tr"></div>
+  <div class="reticle bl"></div>
+  <div class="reticle br"></div>
+
+  <button class="print-banner" onclick="window.print()">Print / Save Multi-Page PDF</button>
+
+  <aside class="studio-left-rail" aria-label="Table of Contents Rail">
+    <div class="rail-head">Table of Contents</div>
+    ${railTocHtml}
+  </aside>
+
+  <main class="doc-shell">
+    <section id="page-cover" class="cover-sheet">
+      <div class="hero-banner">
+        <img src="${heroArt}" alt="KAIA - 22hrs Visualizer" />
+        <a class="ig-pill" href="${reelUrl}" target="_blank" rel="noopener noreferrer">${handle}</a>
+      </div>
+      <h1 class="cover-title">${doc.title}</h1>
+      <div class="cover-author">Authored by: ${author}</div>
+      <blockquote class="cover-quote">${doc.subtitle || DB.meta.essaySubtitle}</blockquote>
+      <div>
+        <a class="reel-link" href="${reelUrl}" target="_blank" rel="noopener noreferrer">
+          &#9654; KAIA - 22hrs (Fan-made Visualizer) &middot; Watch the reel &#8599;
+        </a>
+      </div>
+      <div class="toc-panel">
+        <div class="toc-title">Table of Contents</div>
+        ${coverTocHtml}
+      </div>
+    </section>
+
+    ${pagesHtml}
+  </main>
+
+  <script>
+    (function() {
+      if (document.body.classList.contains("is-print-sheet")) return;
+      const pageEls = Array.from(document.querySelectorAll(".chamber-page"));
+      const railNodes = Array.from(document.querySelectorAll(".rail-node"));
+      const orderedIds = ["page-cover"].concat(pageEls.map(function(el) { return el.id; }));
+
+      function openPage(targetId, pushHash) {
+        const cleanId = orderedIds.indexOf(targetId) !== -1 ? targetId : "page-cover";
+        if (cleanId === "page-cover") {
+          document.body.classList.remove("is-split-view");
+          document.body.classList.add("is-cover-view");
+          pageEls.forEach(function(el) { el.classList.remove("is-active-page"); });
+        } else {
+          document.body.classList.remove("is-cover-view");
+          document.body.classList.add("is-split-view");
+          pageEls.forEach(function(el) {
+            el.classList.toggle("is-active-page", el.id === cleanId);
+          });
+        }
+        railNodes.forEach(function(btn) {
+          btn.classList.toggle("is-active-node", btn.getAttribute("data-target") === cleanId);
+        });
+        if (pushHash) {
+          try { history.replaceState(null, "", "#" + cleanId); } catch (e) {}
+        }
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      document.addEventListener("click", function(e) {
+        const trigger = e.target.closest("[data-target]");
+        if (!trigger) return;
+        e.preventDefault();
+        openPage(trigger.getAttribute("data-target"), true);
+      });
+
+      document.addEventListener("keydown", function(e) {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+        const hash = (window.location.hash || "#page-cover").replace(/^#/, "");
+        const idx = orderedIds.indexOf(hash);
+        const cur = idx === -1 ? 0 : idx;
+        if (e.key === "ArrowRight" && cur < orderedIds.length - 1) {
+          openPage(orderedIds[cur + 1], true);
+        } else if (e.key === "ArrowLeft" && cur > 0) {
+          openPage(orderedIds[cur - 1], true);
+        }
+      });
+
+      window.addEventListener("hashchange", function() {
+        const hash = (window.location.hash || "#page-cover").replace(/^#/, "");
+        openPage(hash, false);
+      });
+
+      const initialHash = (window.location.hash || "").replace(/^#/, "");
+      if (initialHash && orderedIds.indexOf(initialHash) !== -1) {
+        openPage(initialHash, false);
+      }
+    })();
+  <\/script>
+  ${printScript}
+</body>
+</html>`;
+    }
+
+    /* a1.8: the vault travels as one file - the share sheet where there is one (iPhone), a download otherwise */
+    async function sendVault() {
+      const name = "studio-vault-" + new Date().toISOString().slice(0, 10) + ".json";
+      const text = JSON.stringify(vault, null, 2);
+      try {
+        const file = new File([text], name, { type: "application/json" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Writing Studio vault" });
+          whisper("Vault sent");
+          return;
+        }
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+      }
+      downloadBlob(name, text, "application/json");
+      whisper("Vault saved - open it on the other device with Import Vault");
+    }
+
+    function exportActiveDoc(kind) {
+      const doc = getActiveDoc();
+      const safeName = doc.title.replace(/[^a-zA-Z0-9_-]+/g, "-").replace(/^-|-$/g, "");
+      if (kind === "json") {
+        sendVault();
+      } else if (kind === "md") {
+        let md = `# ${doc.title}\n**Authored by:** ${doc.author || "Nate"} (${doc.handle || "@IZ.NENAD.AN"})\n\n> ${doc.subtitle}\n\n[KAIA - 22hrs Visualizer Reel](${doc.reelUrl || DB.meta.reelUrl})\n\n---\n\n`;
+        doc.chapters.forEach((ch) => {
+          if (ch.id === "cover" || (ch.subs[0] && ch.subs[0].isCover)) return;
+          md += `## ${ch.num}. ${ch.title}\n\n`;
+          ch.subs.forEach((sub) => {
+            if (!sub.isRoot) md += `### ${sub.title}\n\n`;
+            const body = htmlToPlainMarkdown(doc.sections[sub.id]);
+            if (body) md += body + "\n\n";
+          });
+        });
+        downloadBlob(safeName + ".md", md, "text/markdown;charset=utf-8");
+        whisper("Markdown draft exported (.md)");
+      } else if (kind === "html") {
+        const holoHtml = buildHolographicExportDocument(doc, false);
+        downloadBlob(safeName + "-Holographic.html", holoHtml, "text/html;charset=utf-8");
+        whisper("Standalone Holographic HTML exported (.html)");
+      } else if (kind === "pdf") {
+        const holoPdfHtml = buildHolographicExportDocument(doc, true);
+        const win = window.open("", "_blank");
+        if (win) {
+          win.document.open();
+          win.document.write(holoPdfHtml);
+          win.document.close();
+          whisper("Holographic PDF sheet opened — choose 'Save as PDF' with Background Graphics ON");
+        } else {
+          downloadBlob(safeName + "-Holographic-Print.html", holoPdfHtml, "text/html;charset=utf-8");
+          whisper("Popup blocked — downloaded Holographic Print HTML (open & Ctrl+P -> Save as PDF)");
+        }
+      }
+    }
+
+    function initStudio() {
+      loadCustomSkins();
+      loadVault();
+      applyA18Fixes();
+      startSpatialLoop();
+
+      syncDocArtworkEverywhere(getActiveDoc());
+
+      const artCard = document.getElementById("visualAnchorCard");
+      const btnArt = document.getElementById("btnToggleArt");
+      if (!vault.showVisualAnchor) {
+        artCard.classList.add("is-hidden");
+        btnArt.classList.remove("is-latched");
+      }
+      btnArt.onclick = () => {
+        vault.showVisualAnchor = !vault.showVisualAnchor;
+        artCard.classList.toggle("is-hidden", !vault.showVisualAnchor);
+        btnArt.classList.toggle("is-latched", vault.showVisualAnchor);
+        saveVault();
+      };
+
+      renderSkinSelector();
+      applySkin(vault.activeSkin || "rgb-triple-holo");
+      applyBodyFont(vault.bodyFont || "serif");
+
+      const surface = document.getElementById("writingSurface");
+
+      document.getElementById("btnBold").onclick = () => {
+        armedFormat.bold = !armedFormat.bold;
+        surface.focus();
+        if (document.queryCommandState("bold") !== armedFormat.bold) {
+          document.execCommand("bold", false, null);
+        }
+        updateFormatVisualCues();
+        handleEditorInput();
+      };
+
+      document.getElementById("btnItalic").onclick = () => {
+        armedFormat.italic = !armedFormat.italic;
+        surface.focus();
+        if (document.queryCommandState("italic") !== armedFormat.italic) {
+          document.execCommand("italic", false, null);
+        }
+        updateFormatVisualCues();
+        handleEditorInput();
+      };
+
+      surface.addEventListener("focus", () => {
+        if (document.queryCommandState("bold") !== armedFormat.bold) {
+          document.execCommand("bold", false, null);
+        }
+        if (document.queryCommandState("italic") !== armedFormat.italic) {
+          document.execCommand("italic", false, null);
+        }
+      });
+
+      surface.addEventListener("mouseup", () => {
+        captureEditorRange();
+        syncArmedStateFromSelection();
+      });
+      surface.addEventListener("keyup", () => {
+        captureEditorRange();
+        syncArmedStateFromSelection();
+        updateFocusedParagraph();
+      });
+      surface.addEventListener("blur", captureEditorRange);
+      surface.addEventListener("input", () => {
+        captureEditorRange();
+        handleEditorInput();
+      });
+
+      document.querySelectorAll(".font-pill").forEach((pill) => {
+        pill.onclick = () => {
+          applyBodyFont(pill.dataset.font);
+          surface.focus();
+          whisper("Font armed: " + pill.dataset.font.toUpperCase());
+        };
+      });
+
+      document.getElementById("btnQuote").onclick = toggleBlockquote;
+
+      /* a1.8: Undo / Redo on screen (phone keyboards have no Ctrl+Z) */
+      function historyStep(cmd) {
+        const sel = window.getSelection();
+        if (!(sel && sel.rangeCount && surface.contains(sel.anchorNode))) restoreEditorRange();
+        document.execCommand(cmd, false, null);
+        handleEditorInput();
+      }
+      ["btnUndo", "btnRedo"].forEach((id) => {
+        document.getElementById(id).onmousedown = (e) => { e.preventDefault(); captureEditorRange(); };
+      });
+      document.getElementById("btnUndo").onclick = () => historyStep("undo");
+      document.getElementById("btnRedo").onclick = () => historyStep("redo");
+
+      /* a1.8: titles you can click and rename - the chamber heading, the piece title, the cover text */
+      function editableLine(el, onSave, keepEnter) {
+        el.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !keepEnter) { e.preventDefault(); el.blur(); }
+          if (e.key === "Escape") { e.stopPropagation(); el.blur(); }
+        });
+        el.addEventListener("blur", () => onSave(el.textContent.replace(/\s+/g, " ").trim()));
+      }
+      editableLine(document.getElementById("chamberHeading"), (t) => {
+        const doc = getActiveDoc();
+        const ch = doc.chapters.find((c) => c.subs.some((s) => s.id === vault.activeSectionId));
+        const sub = ch && ch.subs.find((s) => s.id === vault.activeSectionId);
+        if (t && sub && t !== sub.title) {
+          sub.title = t;
+          if (sub.isRoot) ch.title = t;
+          saveVault();
+          renderChapterTree();
+          whisper("Renamed: " + t);
+        }
+        renderActiveChamber();
+      });
+      editableLine(document.getElementById("coverMainTitle"), (t) => {
+        const doc = getActiveDoc();
+        if (t && t !== doc.title) {
+          doc.title = t;
+          saveVault();
+          whisper("Piece renamed");
+        }
+        renderActiveChamber();
+      });
+      editableLine(document.getElementById("coverOpeningQuote"), (t) => {
+        const doc = getActiveDoc();
+        if (t && t !== doc.subtitle) {
+          doc.subtitle = t;
+          saveVault();
+          whisper("Cover text saved");
+        }
+        renderActiveChamber();
+      }, true);
+
+      /* a1.8: the map - rename, add, move and delete topics and subtopics */
+      document.getElementById("btnEditMap").onclick = () => {
+        window.__editMap = !window.__editMap;
+        document.getElementById("btnEditMap").classList.toggle("is-on", window.__editMap);
+        document.getElementById("btnEditMap").textContent = window.__editMap ? "Done" : "Edit";
+        renderChapterTree();
+      };
+
+      /* a1.8: import a vault from the other device; the one it replaces is kept for Undo */
+      const IMPORT_KEEP = STORAGE_KEY + "_before_import";
+      const btnUndoImport = document.getElementById("btnUndoImport");
+      btnUndoImport.style.display = localStorage.getItem(IMPORT_KEEP) ? "flex" : "none";
+      document.getElementById("importVaultInput").onchange = async (e) => {
+        const f = e.target.files && e.target.files[0];
+        e.target.value = "";
+        if (!f) return;
+        try {
+          const data = JSON.parse(await f.text());
+          if (!data || !data.docs || !Object.keys(data.docs).length) throw new Error("not a vault");
+          const n = Object.keys(data.docs).length;
+          if (!window.confirm(`Replace this device's vault with the imported one (${n} piece${n > 1 ? "s" : ""})? The current one is kept, so Undo Last Import can bring it back.`)) return;
+          localStorage.setItem(IMPORT_KEEP, JSON.stringify(vault));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          location.reload();
+        } catch (err) {
+          whisper("That file isn't a studio vault");
+        }
+      };
+      btnUndoImport.onclick = () => {
+        const prev = localStorage.getItem(IMPORT_KEEP);
+        if (!prev || !window.confirm("Bring back the vault from before the last import?")) return;
+        localStorage.setItem(STORAGE_KEY, prev);
+        localStorage.removeItem(IMPORT_KEEP);
+        location.reload();
+      };
+
+      /* a1.7: bulleted and numbered lists; press again (or Enter on an empty item) to leave the list */
+      function toggleList(kind) {
+        ensureWritingChamber();
+        const sel = window.getSelection();
+        // the browser keeps the caret where it was; restore only when it has really left the surface
+        if (!(sel && sel.rangeCount && surface.contains(sel.anchorNode))) restoreEditorRange();
+        // Chrome rebuilds the line's text when it makes the list and drops the caret at its start:
+        // remember the caret as a character count through the chamber and put it back there
+        const keep = caretCharIndex();
+        document.execCommand(kind === "ol" ? "insertOrderedList" : "insertUnorderedList", false, null);
+        if (keep !== null) placeCaretAtCharIndex(keep);
+        captureEditorRange();
+        updateListCues();
+        handleEditorInput();
+      }
+      /* a1.7: the caret as a character count from the start of the chamber, and back */
+      function caretCharIndex() {
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount || !surface.contains(sel.anchorNode)) return null;
+        const r = document.createRange();
+        r.selectNodeContents(surface);
+        r.setEnd(sel.anchorNode, sel.anchorOffset);
+        return r.toString().length;
+      }
+      function placeCaretAtCharIndex(index) {
+        const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
+        let left = index, node;
+        while ((node = walker.nextNode())) {
+          if (left <= node.length) {
+            window.getSelection().collapse(node, left);
+            return;
+          }
+          left -= node.length;
+        }
+      }
+      function updateListCues() {
+        const sel = window.getSelection();
+        const inSurface = Boolean(sel && sel.rangeCount && surface.contains(sel.anchorNode));
+        document.getElementById("btnBullets").classList.toggle("is-latched", inSurface && document.queryCommandState("insertUnorderedList"));
+        document.getElementById("btnNumbers").classList.toggle("is-latched", inSurface && document.queryCommandState("insertOrderedList"));
+      }
+      ["btnBullets", "btnNumbers"].forEach((id) => {
+        document.getElementById(id).onmousedown = (e) => { e.preventDefault(); captureEditorRange(); };
+      });
+      document.getElementById("btnBullets").onclick = () => toggleList("ul");
+      document.getElementById("btnNumbers").onclick = () => toggleList("ol");
+      surface.addEventListener("keyup", updateListCues);
+      surface.addEventListener("mouseup", updateListCues);
+
+      /* a1.7: phone layout - the tools and the dock move into the drop-down; back on a wide screen */
+      const phoneMQ = window.matchMedia("(max-width: 760px)");
+      const hudRight = document.querySelector(".hud-top-right");
+      const dock = document.querySelector(".crescent-dock");
+      const hudRightHome = document.createComment("hud-right-home");
+      const dockHome = document.createComment("dock-home");
+      hudRight.before(hudRightHome);
+      dock.before(dockHome);
+      function placeForScreen() {
+        const tools = document.getElementById("mobileTools");
+        if (phoneMQ.matches) {
+          tools.append(hudRight, dock);
+        } else {
+          hudRightHome.after(hudRight);
+          dockHome.after(dock);
+          closePhonePanels();
+        }
+      }
+      phoneMQ.addEventListener("change", placeForScreen);
+      placeForScreen();
+      document.getElementById("btnMobNav").onclick = () => {
+        document.body.classList.remove("tools-open");
+        document.body.classList.toggle("nav-open");
+      };
+      document.getElementById("btnMobTools").onclick = () => {
+        document.body.classList.remove("nav-open");
+        document.body.classList.toggle("tools-open");
+      };
+      document.getElementById("mobScrim").onclick = closePhonePanels;
+      surface.addEventListener("focus", () => { if (phoneMQ.matches) document.body.classList.add("is-typing"); });
+      surface.addEventListener("blur", () => document.body.classList.remove("is-typing"));
+
+      surface.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          const bq = getActiveBlockquote();
+          if (bq) {
+            const sel = window.getSelection();
+            const textBefore = bq.textContent || "";
+            const htmlNow = bq.innerHTML || "";
+            const isAtTrailingBlank = /(<br\s*\/?>\s*){2,}$/i.test(htmlNow) || textBefore.trim() === "";
+            if (isAtTrailingBlank && sel && sel.isCollapsed) {
+              e.preventDefault();
+              bq.innerHTML = bq.innerHTML.replace(/(<br\s*\/?>\s*)+$/i, "");
+              if (!bq.textContent.trim()) {
+                const p = document.createElement("div");
+                p.innerHTML = "<br>";
+                bq.parentNode.replaceChild(p, bq);
+                placeCaretAtEnd(p);
+              } else {
+                const p = document.createElement("div");
+                p.innerHTML = "<br>";
+                bq.insertAdjacentElement("afterend", p);
+                placeCaretAtEnd(p);
+              }
+              armedFormat.quote = false;
+              updateFormatVisualCues();
+              handleEditorInput();
+              whisper("Exited quote");
+            }
+          }
+        }
+      });
+
+      document.getElementById("btnEditReelUrl").onclick = () => {
+        const doc = getActiveDoc();
+        const currentUrl = doc.reelUrl || DB.meta.reelUrl;
+        const nextUrl = window.prompt("Enter Instagram Reel / Visualizer URL:", currentUrl);
+        if (nextUrl && nextUrl.trim()) {
+          doc.reelUrl = nextUrl.trim();
+          saveVault();
+          renderCoverPage(doc);
+          whisper("Visualizer Reel link updated");
+        }
+      };
+
+      function insertCurrentAudioCue() {
+        const player = document.getElementById("trackPlayer");
+        let stamp = currentActiveLyric ? currentActiveLyric.t : "0:23";
+        let line = currentActiveLyric ? currentActiveLyric.line : "22hrs cue";
+        if (player && !isNaN(player.currentTime) && player.currentTime > 0) {
+          stamp = formatTime(player.currentTime);
+        }
+        insertCueChip(stamp, line);
+      }
+      document.getElementById("btnCue").onclick = insertCurrentAudioCue;
+
+      const mediaModal = document.getElementById("mediaModal");
+      const mediaFileInput = document.getElementById("mediaFileInput");
+      const mediaUrlInput = document.getElementById("mediaUrlInput");
+      const mediaPresetSelect = document.getElementById("mediaPresetSelect");
+      const mediaCaptionInput = document.getElementById("mediaCaptionInput");
+      const mediaSizeInput = document.getElementById("mediaSizeInput");
+
+      function renderCaptionPresets(selectedVal = "") {
+        mediaPresetSelect.innerHTML = "";
+        const blankOpt = document.createElement("option");
+        blankOpt.value = "";
+        blankOpt.textContent = "— Custom / Blank Caption —";
+        mediaPresetSelect.appendChild(blankOpt);
+        (vault.captionPresets || []).forEach((preset) => {
+          const opt = document.createElement("option");
+          opt.value = preset;
+          opt.textContent = preset;
+          mediaPresetSelect.appendChild(opt);
+        });
+        mediaPresetSelect.value = selectedVal;
+      }
+
+      mediaPresetSelect.onchange = () => {
+        mediaCaptionInput.value = mediaPresetSelect.value;
+        mediaCaptionInput.focus();
+        const len = mediaCaptionInput.value.length;
+        mediaCaptionInput.setSelectionRange(len, len);
+      };
+
+      document.getElementById("btnSaveCaptionPreset").onclick = () => {
+        const val = mediaCaptionInput.value;
+        if (!val || !val.trim()) {
+          whisper("Type a caption first to save as preset");
+          return;
+        }
+        if (!Array.isArray(vault.captionPresets)) vault.captionPresets = [];
+        if (!vault.captionPresets.includes(val)) {
+          vault.captionPresets.unshift(val);
+          saveVault();
+        }
+        renderCaptionPresets(val);
+        whisper("Caption preset saved");
+      };
+
+      document.getElementById("btnDelCaptionPreset").onclick = () => {
+        const cur = mediaPresetSelect.value;
+        if (!cur) {
+          whisper("Select a saved preset to remove");
+          return;
+        }
+        vault.captionPresets = (vault.captionPresets || []).filter((p) => p !== cur);
+        saveVault();
+        renderCaptionPresets("");
+        whisper("Preset removed");
+      };
+
+      document.getElementById("btnAddMedia").onmousedown = (e) => {
+        e.preventDefault();
+        captureEditorRange();
+      };
+      document.getElementById("btnAddMedia").onclick = () => {
+        captureEditorRange();
+        mediaFileInput.value = "";
+        mediaUrlInput.value = "";
+        renderCaptionPresets("");
+        mediaCaptionInput.value = "";
+        mediaSizeInput.value = "full";
+        mediaModal.classList.add("is-open");
+      };
+      document.getElementById("btnCancelMedia").onclick = () => mediaModal.classList.remove("is-open");
+
+      document.getElementById("btnInsertMedia").onclick = async () => {
+        const file = mediaFileInput.files && mediaFileInput.files[0];
+        const urlVal = mediaUrlInput.value.trim();
+        const capVal = mediaCaptionInput.value.trim();
+        const sizeVal = mediaSizeInput.value || "full";
+        if (file) {
+          try {
+            const dataUrl = await compressImageFile(file);
+            mediaModal.classList.remove("is-open");
+            insertMediaIntoActiveChamber(dataUrl, capVal, sizeVal);
+          } catch (err) {
+            whisper("Could not load image file");
+          }
+        } else if (urlVal) {
+          mediaModal.classList.remove("is-open");
+          insertMediaIntoActiveChamber(urlVal, capVal, sizeVal);
+        } else {
+          whisper("Choose an image file or enter a URL first");
+        }
+      };
+
+      // Delegated controls for embedded media frames (Size / Caption / Delete)
+      surface.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-media-act]");
+        if (!btn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const fig = btn.closest(".holo-media-block");
+        if (!fig) return;
+        const act = btn.dataset.mediaAct;
+        if (act === "delete") {
+          fig.remove();
+          handleEditorInput();
+          whisper("Media removed");
+        } else if (act === "size") {
+          const order = ["full", "md", "sm"];
+          const cur = fig.getAttribute("data-size") || "full";
+          const next = order[(order.indexOf(cur) + 1) % order.length];
+          fig.setAttribute("data-size", next);
+          handleEditorInput();
+          whisper("Frame width: " + next.toUpperCase());
+        } else if (act === "caption") {
+          const capEl = fig.querySelector(".holo-media-caption");
+          const currentCap = capEl ? capEl.textContent : "";
+          const nextCap = window.prompt("Edit media caption (leave blank to hide):", currentCap);
+          if (nextCap !== null && capEl) {
+            capEl.textContent = nextCap.trim();
+            const img = fig.querySelector("img");
+            if (img) img.alt = nextCap.trim() || "Inserted visual";
+            handleEditorInput();
+            whisper("Caption updated");
+          }
+        }
+      });
+
+      // Drag & drop image files onto the writing surface
+      surface.addEventListener("dragover", (e) => {
+        if (e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files")) {
+          e.preventDefault();
+          surface.classList.add("is-drag-over");
+        }
+      });
+      surface.addEventListener("dragleave", () => surface.classList.remove("is-drag-over"));
+      surface.addEventListener("drop", async (e) => {
+        surface.classList.remove("is-drag-over");
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (!files || !files.length) return;
+        const imgFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
+        if (!imgFiles.length) return;
+        e.preventDefault();
+        if (document.caretRangeFromPoint) {
+          const dropRange = document.caretRangeFromPoint(e.clientX, e.clientY);
+          if (dropRange && surface.contains(dropRange.commonAncestorContainer)) {
+            lastEditorRange = dropRange.cloneRange();
+          }
+        }
+        for (const f of imgFiles) {
+          const dataUrl = await compressImageFile(f);
+          insertMediaIntoActiveChamber(dataUrl, "", "full");
+        }
+      });
+
+      // Paste image directly from clipboard
+      surface.addEventListener("paste", async (e) => {
+        const items = e.clipboardData && e.clipboardData.items;
+        if (!items) return;
+        for (const item of Array.from(items)) {
+          if (item.type && item.type.startsWith("image/")) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            if (file) {
+              const dataUrl = await compressImageFile(file);
+              insertMediaIntoActiveChamber(dataUrl, "", "full");
+            }
+            return;
+          }
+        }
+      });
+
+      // Cover art swap button
+      const coverArtInput = document.getElementById("coverArtFileInput");
+      document.getElementById("btnSwapCoverArt").onclick = () => {
+        coverArtInput.value = "";
+        coverArtInput.click();
+      };
+      coverArtInput.onchange = async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const dataUrl = await compressImageFile(file, 1600, 0.88);
+        const doc = getActiveDoc();
+        doc.coverArt = dataUrl;
+        saveVault();
+        renderCoverPage(doc);
+        whisper("Cover art updated");
+      };
+
+      const btnTypewriter = document.getElementById("btnTypewriter");
+      if (vault.typewriterMode) {
+        document.body.classList.add("typewriter-flow");
+        btnTypewriter.classList.add("is-latched");
+      }
+      btnTypewriter.onclick = () => {
+        vault.typewriterMode = !vault.typewriterMode;
+        document.body.classList.toggle("typewriter-flow", vault.typewriterMode);
+        btnTypewriter.classList.toggle("is-latched", vault.typewriterMode);
+        updateFocusedParagraph();
+        saveVault();
+      };
+
+      const btnEcho = document.getElementById("btnEchoCheck");
+      if (vault.echoCheck) btnEcho.classList.add("is-latched");
+      btnEcho.onclick = () => {
+        vault.echoCheck = !vault.echoCheck;
+        btnEcho.classList.toggle("is-latched", vault.echoCheck);
+        updateEchoAnalysis();
+        saveVault();
+      };
+
+      document.getElementById("btnGlitchPulse").onclick = () => {
+        triggerGlitchBurst();
+        pulseRgbPillars();
+      };
+
+      document.getElementById("btnModeSingle").onclick = () => setViewMode("single");
+      document.getElementById("btnModeFull").onclick = () => setViewMode("full");
+
+      function goPrevChamber() {
+        const flat = flattenSections(getActiveDoc());
+        const idx = flat.findIndex((x) => x.subId === vault.activeSectionId);
+        if (idx > 0) selectSection(flat[idx - 1].subId);
+      }
+      function goNextChamber() {
+        const flat = flattenSections(getActiveDoc());
+        const idx = flat.findIndex((x) => x.subId === vault.activeSectionId);
+        if (idx >= 0 && idx < flat.length - 1) selectSection(flat[idx + 1].subId);
+      }
+      document.getElementById("btnPrevChamber").onclick = goPrevChamber;
+      document.getElementById("btnNextChamber").onclick = goNextChamber;
+
+      function toggleFocusMode(forceState) {
+        const next = typeof forceState === "boolean" ? forceState : !document.body.classList.contains("focus-mode");
+        document.body.classList.toggle("focus-mode", next);
+      }
+      document.getElementById("btnFocusMode").onclick = () => { closePhonePanels(); toggleFocusMode(true); };
+      ["btnOpenUnsaid", "btnOpenExport", "btnOpenSkin", "btnAddMedia", "btnSwitchPiece", "btnNewDoc"].forEach((id) => {
+        document.getElementById(id).addEventListener("click", closePhonePanels);
+      });
+      document.getElementById("btnExitFocus").onclick = () => toggleFocusMode(false);
+
+      const player = document.getElementById("trackPlayer");
+      const btnPlay = document.getElementById("btnDomePlay");
+      const scrubber = document.getElementById("domeScrubber");
+      const timecodeEl = document.getElementById("domeTimecode");
+
+      document.getElementById("audioFileInput").onchange = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        player.src = URL.createObjectURL(file);
+        document.getElementById("domeTrackLabel").textContent = file.name.replace(/\.[^.]+$/, "");
+        player.play().catch(() => {});
+        btnPlay.innerHTML = "&#10074;&#10074;";
+        whisper("Loaded audio: " + file.name);
+      };
+
+      btnPlay.onclick = () => {
+        if (!player.src) {
+          whisper("Load KAIA - 22hrs MP3 first");
+          return;
+        }
+        if (player.paused) {
+          player.play().catch(() => {});
+          btnPlay.innerHTML = "&#10074;&#10074;";
+        } else {
+          player.pause();
+          btnPlay.innerHTML = "&#9654;";
+        }
+      };
+
+      player.addEventListener("loadedmetadata", () => {
+        scrubber.max = String(Math.floor(player.duration || 165));
+        timecodeEl.textContent = `0:00 / ${formatTime(player.duration)}`;
+      });
+
+      player.addEventListener("timeupdate", () => {
+        scrubber.value = String(player.currentTime);
+        timecodeEl.textContent = `${formatTime(player.currentTime)} / ${formatTime(player.duration || 165)}`;
+        syncActiveLyric(player.currentTime);
+        pulseRgbPillars();
+      });
+
+      scrubber.addEventListener("input", () => {
+        if (player.src) player.currentTime = parseFloat(scrubber.value);
+        syncActiveLyric(parseFloat(scrubber.value));
+      });
+
+      document.getElementById("domeLiveLyric").onclick = () => {
+        if (currentActiveLyric) insertCueChip(currentActiveLyric.t, currentActiveLyric.line);
+      };
+
+      const lyricsDrawer = document.getElementById("lyricsDrawer");
+      document.getElementById("btnToggleLyrics").onclick = () => lyricsDrawer.classList.toggle("is-open");
+      document.getElementById("btnCloseLyrics").onclick = () => lyricsDrawer.classList.remove("is-open");
+
+      const unsaidModal = document.getElementById("unsaidModal");
+      document.getElementById("btnOpenUnsaid").onclick = () => unsaidModal.classList.add("is-open");
+      document.getElementById("btnCloseUnsaid").onclick = () => unsaidModal.classList.remove("is-open");
+      document.getElementById("unsaidTextarea").addEventListener("input", (e) => {
+        const doc = getActiveDoc();
+        if (!doc.scratchpads) doc.scratchpads = {};
+        doc.scratchpads[vault.activeSectionId] = e.target.value;
+        updateUnsaidCounter(e.target.value);
+        saveVault();
+      });
+
+      const switchPieceModal = document.getElementById("switchPieceModal");
+      const newPieceModal = document.getElementById("newPieceModal");
+
+      document.getElementById("btnSwitchPiece").onclick = () => {
+        renderPieceList();
+        switchPieceModal.classList.add("is-open");
+      };
+      document.getElementById("btnCloseSwitchModal").onclick = () => switchPieceModal.classList.remove("is-open");
+      document.getElementById("btnOpenNewFromSwitch").onclick = () => {
+        switchPieceModal.classList.remove("is-open");
+        newPieceModal.classList.add("is-open");
+        document.getElementById("newDocTitle").focus();
+      };
+
+      document.getElementById("btnNewDoc").onclick = () => {
+        newPieceModal.classList.add("is-open");
+        document.getElementById("newDocTitle").focus();
+      };
+      document.getElementById("btnCloseNewPieceModal").onclick = () => newPieceModal.classList.remove("is-open");
+
+      document.getElementById("btnConfirmNewDoc").onclick = () => {
+        const title = document.getElementById("newDocTitle").value.trim();
+        if (!title) { whisper("Enter a piece title first"); return; }
+        const sub = document.getElementById("newDocSub").value.trim() || "Draft Piece";
+        const rawLines = document.getElementById("newDocChapters").value.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+        const chapNames = rawLines.length ? rawLines : ["Opening", "Core", "Closing"];
+        const id = "doc-" + Date.now();
+        const chapters = [
+          { id: "cover", num: "0", title: "Cover & Title", subs: [{ id: "cover-main", title: "Cover & Title", isRoot: true, isCover: true }] }
+        ];
+        const sections = { "cover-main": "" };
+        chapNames.forEach((cName, idx) => {
+          const cId = `ch-${id}-${idx + 1}`;
+          const sId = `sec-${id}-${idx + 1}`;
+          chapters.push({ id: cId, num: String(idx + 1), title: cName, subs: [{ id: sId, title: cName, isRoot: true }] });
+          sections[sId] = "";
+        });
+        vault.docs[id] = {
+          id,
+          title,
+          author: DB.meta.author || "Nate",
+          handle: DB.meta.handle || "@IZ.NENAD.AN",
+          reelUrl: DB.meta.reelUrl,
+          subtitle: sub,
+          chapters,
+          sections,
+          scratchpads: {}
+        };
+        vault.activeDocId = id;
+        vault.activeSectionId = chapters[0].subs[0].id;
+        saveVault();
+        syncDocArtworkEverywhere(getActiveDoc());
+        renderPieceList();
+        renderChapterTree();
+        setViewMode("single");
+        newPieceModal.classList.remove("is-open");
+        document.getElementById("newDocTitle").value = "";
+        document.getElementById("newDocSub").value = "";
+        whisper("Created: " + title);
+      };
+
+      const skinModal = document.getElementById("skinModal");
+      document.getElementById("btnOpenSkin").onclick = () => {
+        fillSkinWells(registeredSkins[vault.activeSkin] || DEFAULT_SKINS["rgb-triple-holo"]);
+        skinModal.classList.add("is-open");
+      };
+      document.getElementById("btnCancelSkin").onclick = () => skinModal.classList.remove("is-open");
+      document.getElementById("skinSelector").onchange = (e) => {
+        applySkin(e.target.value);
+        whisper("Skin: " + (registeredSkins[e.target.value] || {}).name);
+      };
+      document.getElementById("btnDeleteSkin").onclick = () => {
+        const id = vault.activeSkin;
+        if (DEFAULT_SKINS[id]) return;
+        delete registeredSkins[id];
+        const customOnly = {};
+        Object.keys(registeredSkins).forEach((k) => { if (!DEFAULT_SKINS[k]) customOnly[k] = registeredSkins[k]; });
+        localStorage.setItem(SKINS_STORAGE_KEY, JSON.stringify(customOnly));
+        renderSkinSelector();
+        applySkin("rgb-triple-holo");
+        whisper("Skin deleted");
+      };
+      document.getElementById("btnSaveSkin").onclick = () => {
+        const name = document.getElementById("newSkinName").value.trim() || "Custom Holo Skin";
+        const bg = document.getElementById("newSkinBg").value.trim() || "#020307";
+        const holo = document.getElementById("newSkinAccent").value.trim() || "#8fd6ff";
+        const core = document.getElementById("newSkinLamp").value.trim() || "#5affb8";
+        const baseSkin = registeredSkins[vault.activeSkin] || DEFAULT_SKINS["rgb-triple-holo"];
+        registerSkin({
+          id: "skin-" + Date.now(),
+          name,
+          tokens: { ...baseSkin.tokens, "--bg": bg, "--holo": holo, "--holo-bright": mixHex(holo, "#ffffff", 0.62), "--rgb-g": core }
+        });
+        document.getElementById("newSkinName").value = "";
+        skinModal.classList.remove("is-open");
+        whisper("Saved skin: " + name);
+      };
+
+      const exportModal = document.getElementById("exportModal");
+      document.getElementById("btnOpenExport").onclick = () => exportModal.classList.add("is-open");
+      document.getElementById("btnCloseExport").onclick = () => exportModal.classList.remove("is-open");
+      document.getElementById("btnExpPdf").onclick = () => { exportActiveDoc("pdf"); exportModal.classList.remove("is-open"); };
+      document.getElementById("btnExpHtml").onclick = () => { exportActiveDoc("html"); exportModal.classList.remove("is-open"); };
+      document.getElementById("btnExpMd").onclick = () => { exportActiveDoc("md"); exportModal.classList.remove("is-open"); };
+      document.getElementById("btnExpJson").onclick = () => { exportActiveDoc("json"); exportModal.classList.remove("is-open"); };
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          const panels = [lyricsDrawer, unsaidModal, switchPieceModal, newPieceModal, skinModal, exportModal, mediaModal];
+          const openOnes = panels.filter((m) => m.classList.contains("is-open"));
+          const phoneOpen = document.body.classList.contains("nav-open") || document.body.classList.contains("tools-open");
+          if (openOnes.length || phoneOpen) {
+            openOnes.forEach((m) => m.classList.remove("is-open"));
+            closePhonePanels();
+          } else {
+            toggleFocusMode();
+          }
+        } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          goNextChamber();
+        } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "K" || e.key === "k")) {
+          e.preventDefault();
+          insertCurrentAudioCue();
+        }
+      });
+
+      renderPieceList();
+      renderChapterTree();
+      renderLyrics();
+      updateFormatVisualCues();
+      setViewMode(vault.viewMode || "single");
+    }
+
+    /* a1.8: once, on first open - the essay's topic 2 and cover text go back to his own words */
+    function applyA18Fixes() {
+      if (vault.fixA18) return;
+      const d = vault.docs["essay-22hrs"];
+      if (d) {
+        (d.chapters || []).forEach((c) => {
+          if (c.title === "The Felt (Track Review)") {
+            c.title = "The Felt";
+            c.subs.filter((s) => s.isRoot).forEach((s) => { s.title = "The Felt"; });
+          }
+        });
+        d.subtitle = DB.meta.essaySubtitle;
+      }
+      vault.fixA18 = true;
+      saveVault();
+    }
+
+    /* a1.7: close the phone's chamber drawer and tools */
+    function closePhonePanels() {
+      document.body.classList.remove("nav-open", "tools-open");
+    }
+
+    window.addEventListener("DOMContentLoaded", initStudio);
+  </script>
+</body>
+</html>
