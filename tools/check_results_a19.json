@@ -1,0 +1,147 @@
+[
+ [
+  "a1.8 new essay inherited the 22hrs link (the reported problem)",
+  "PASS",
+  ""
+ ],
+ [
+  "a1.9 opens the same vault, both essays kept",
+  "PASS",
+  ""
+ ],
+ [
+  "NeuroToxic essay drops the inherited 22hrs link",
+  "PASS",
+  ""
+ ],
+ [
+  "new essay: player says No song yet",
+  "PASS",
+  "No song yet"
+ ],
+ [
+  "new essay: no 2:45 length",
+  "PASS",
+  "0:00 / -:--"
+ ],
+ [
+  "new essay: no 22hrs lyric on the dome",
+  "PASS",
+  "No lyrics yet \u00b7 Lyrics \u25b4 \u203a Edit to add them"
+ ],
+ [
+  "new essay: cover is a quiet empty frame",
+  "PASS",
+  ""
+ ],
+ [
+  "new essay: no link shown, button says Add Link",
+  "PASS",
+  ""
+ ],
+ [
+  "new essay chamber: no 22hrs art strip",
+  "PASS",
+  "none"
+ ],
+ [
+  "new essay lyrics drawer: empty note, no 22hrs lines",
+  "PASS",
+  "This essay's song \u00b7 Click any line to stamp cue"
+ ],
+ [
+  "lyrics saved per essay, timed and untimed lines read right",
+  "PASS",
+  "[{\"t\": \"\", \"line\": \"first test line\"}, {\"t\": \"\", \"line\": \"second test line\"}, {\"t\": \"0:20\", \"line\": \"third line already timed\"}]"
+ ],
+ [
+  "Load MP3 names this essay's song",
+  "PASS",
+  "test-song"
+ ],
+ [
+  "Tap to time opens with the song playing",
+  "PASS",
+  ""
+ ],
+ [
+  "Mark writes each line's time",
+  "PASS",
+  "[\"0:03\", \"0:07\", \"0:12\"] / All 3 lines timed \u00b7 press Done"
+ ],
+ [
+  "dome follows the timed lyrics",
+  "PASS",
+  "[0:07] \"second test line\""
+ ],
+ [
+  "cue chip from this essay's song",
+  "PASS",
+  ""
+ ],
+ [
+  "Edit Link sets this essay's own address and words",
+  "PASS",
+  "{\"href\": \"https://example.com/neuro\", \"label\": \"\\u25b6 NeuroToxic reel \\u2197\", \"hidden\": false}"
+ ],
+ [
+  "Change Cover Art fills the empty frame",
+  "PASS",
+  ""
+ ],
+ [
+  "22hrs essay: KAIA - 22hrs, 2:45, its 35 lyric lines",
+  "PASS",
+  "{\"dome\": \"KAIA - 22hrs\", \"time\": \"0:00 / 2:45\", \"n\": 35}"
+ ],
+ [
+  "22hrs essay: its reel link and label unchanged",
+  "PASS",
+  ""
+ ],
+ [
+  "22hrs essay: its art",
+  "PASS",
+  ""
+ ],
+ [
+  "switching essays stops the other essay's MP3",
+  "PASS",
+  ""
+ ],
+ [
+  "a piece made in a1.9 starts blank (song, art, link)",
+  "PASS",
+  "{\"dome\": \"No song yet\", \"empty\": true, \"link\": true}"
+ ],
+ [
+  "HTML export of a blank piece: no 22hrs art, label or link",
+  "PASS",
+  ""
+ ],
+ [
+  "Markdown export of a blank piece: no 22hrs link",
+  "PASS",
+  ""
+ ],
+ [
+  "HTML export of the 22hrs essay keeps its art and link",
+  "PASS",
+  ""
+ ],
+ [
+  "Full Essay view of a blank piece: no 22hrs link",
+  "PASS",
+  ""
+ ],
+ [
+  "every button pressed (56), zero page errors",
+  "PASS",
+  ""
+ ],
+ [
+  "phone: zero page errors",
+  "PASS",
+  ""
+ ]
+]
